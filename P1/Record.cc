@@ -47,7 +47,6 @@ int Record :: SuckNextRecord (Schema *mySchema, FILE *textFile) {
 	// this is the current position (int bytes) in the binary
 	// representation of the record that we are dealing with
 	int currentPosInRec = sizeof (int) * (n + 1);
-
 	// loop through all of the attributes
 	for (int i = 0; i < n; i++) {
 		
@@ -69,12 +68,13 @@ int Record :: SuckNextRecord (Schema *mySchema, FILE *textFile) {
 
 		// set up the pointer to the current attribute in the record
 		((int *) recSpace)[i + 1] = currentPosInRec;
-
+		
 		// null terminate the string
 		space[len] = 0;
 		len++;
 
 		// then we convert the data to the correct binary representation
+
 		if (atts[i].myType == Int) {
 			*((int *) &(recSpace[currentPosInRec])) = atoi (space);	
 			currentPosInRec += sizeof (int);
@@ -360,6 +360,7 @@ void Record :: Print (Schema *mySchema) {
 	}
 
 	cout << "\n";
+
 }
 
 

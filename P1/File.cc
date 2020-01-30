@@ -238,7 +238,8 @@ void File :: Open (int fileLen, char *fName) {
                 mode = O_RDWR;
 
 	// actually do the open
-        myFilDes = open (fName, mode, S_IRUSR | S_IWUSR);
+        myFilDes = open (fName, mode, S_IRUSR | S_IWUSR); 
+		cout << myFilDes <<" Myfile Des \n"; 
 
 #ifdef verbose
 	cout << "Opening file " << fName << " with "<< curLength << " pages.\n";
@@ -260,7 +261,6 @@ void File :: Open (int fileLen, char *fName) {
 	} else {
 		curLength = 0;
 	}
-
 }
 
 

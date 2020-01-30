@@ -28,12 +28,7 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
     FILE *tableFile = fopen (loadpath, "r"); 
     Record temp;
     while (temp.SuckNextRecord(&f_schema,tableFile)==1){
-        if(currPage.Append(&temp)==0){
-            myDBFile.AddPage(&currPage, whichPage);
-            whichPage++;
-            currPage.EmptyItOut();
-            currPage.Append(&temp);
-        }
+        Add(temp);
     }
     myDBFile.AddPage(&currPage, whichPage);
 }
@@ -44,6 +39,7 @@ int DBFile::Open (const char *f_path) {
 }
 
 void DBFile::MoveFirst () {
+    currRecord = 0;  
 }
 
 int DBFile::Close () {
@@ -51,16 +47,16 @@ int DBFile::Close () {
 }
 
 void DBFile::Add (Record &rec) {
-    Record temp; 
-     if(currPage.Append(&temp)==0){
+     if(currPage.Append(&rec)==0){
             myDBFile.AddPage(&currPage, whichPage);
             whichPage++;
             currPage.EmptyItOut();
-            currPage.Append(&temp);
+            currPage.Append(&rec);
         }
 }
 
 int DBFile::GetNext (Record &fetchme) {
+    currPage.GetFirst(&fetchme); 
 }
 
 int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {

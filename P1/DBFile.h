@@ -18,7 +18,7 @@ private:
 	File myDBFile; 
 	Page currPage;
 	off_t whichPage = 0; 
-	int currRecord=0;
+	int currRecord = 0;
 public:
 	DBFile (); 
 

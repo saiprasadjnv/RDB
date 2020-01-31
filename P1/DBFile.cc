@@ -71,7 +71,6 @@ int DBFile::Open (const char *f_path) {
 void DBFile::MoveFirst () {
     lastDirtyPage = whichPage; 
     myDBFile.AddPage(&currPage, whichPage);
-    cout << "Moving to top of the file \n";
     myDBFile.GetPage(&currPage,0);
     whichPage=0;
     currRecord=0;
@@ -109,9 +108,7 @@ int DBFile::GetNext (Record &fetchme) {
     off_t len=myDBFile.GetLength();
     if(currPage.GetFirst(&fetchme)==0){
         currPage.EmptyItOut();
-        cout << " whichPage " << whichPage << " len of page" << len << "\n";
         if(++whichPage<len-1){ 
-            cout << " whichPage " << whichPage << " len of page" << len << "\n";
             myDBFile.GetPage(&currPage,whichPage);
             currPage.GetFirst(&fetchme);
             return 1;

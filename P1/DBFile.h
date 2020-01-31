@@ -19,6 +19,8 @@ private:
 	Page currPage;
 	off_t whichPage = 0; 
 	int currRecord = 0;
+	off_t lastDirtyPage = -1; 
+	int numRecRead = 0; 
 public:
 	DBFile (); 
 

@@ -52,8 +52,8 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
         Add(temp);
     }
     myDBFile.AddPage(&currPage, whichPage);
-    if(whichPage==0)
-         myDBFile.AddPage(&currPage, ++whichPage);
+//     if(whichPage==0)
+//          myDBFile.AddPage(&currPage, ++whichPage);
 }
 
 /*
@@ -69,8 +69,11 @@ int DBFile::Open (const char *f_path) {
 * Method to move the pointer to the first data page in the file.
 */
 void DBFile::MoveFirst () {
+    if(whichPage!=0){
     lastDirtyPage = whichPage; 
+    //cout << "Moving First WhichPage" << whichPage << "*********************************\n";
     myDBFile.AddPage(&currPage, whichPage);
+    }
     myDBFile.GetPage(&currPage,0);
     whichPage=0;
     currRecord=0;
@@ -90,10 +93,9 @@ void DBFile::Add (Record &rec) {
     GetLastDirtyPage();
      if(currPage.Append(&rec)==0){
             myDBFile.AddPage(&currPage, whichPage);
-            if(whichPage==0){ 
-                myDBFile.AddPage(&currPage,++whichPage);
-            }
-
+            // if(whichPage==0){ 
+            //     myDBFile.AddPage(&currPage,++whichPage);
+            // }
             whichPage++;
             currPage.EmptyItOut();
             currPage.Append(&rec);

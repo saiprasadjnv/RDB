@@ -86,7 +86,6 @@ int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
     Record temp; 
     ComparisonEngine comp;
     int res;
-    int cres;
     int count=0;
     read_next_record:
         res = GetNext(temp);
@@ -94,12 +93,10 @@ int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
         // cout << "Got new record"; 
         if (res==0)
             return 0; 
-        if(cres = !(comp.Compare(&temp, &literal, &cnf))){
+        if(!(comp.Compare(&temp, &literal, &cnf))){
             // cout << cres << " is Obtained " << count <<"\n"; 
             goto read_next_record;
         }
-    // Schema mySchema ("catalog", "lineitem");
-    // temp.Print(&mySchema);
     fetchme.Consume(&temp);
     return 1; 
 }

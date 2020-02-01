@@ -12,7 +12,8 @@
 #include "DBFile.h"
 #include "Defs.h"
 #include "string"
-#include <iostream> 
+#include <iostream>
+#include "Handler.h" 
 using namespace std;
 
 DBFile::DBFile () {
@@ -52,8 +53,6 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
         Add(temp);
     }
     myDBFile.AddPage(&currPage, whichPage);
-//     if(whichPage==0)
-//          myDBFile.AddPage(&currPage, ++whichPage);
 }
 
 /*
@@ -69,11 +68,7 @@ int DBFile::Open (const char *f_path) {
 * Method to move the pointer to the first data page in the file.
 */
 void DBFile::MoveFirst () {
-    if(whichPage!=0){
-    lastDirtyPage = whichPage; 
-    //cout << "Moving First WhichPage" << whichPage << "*********************************\n";
-    myDBFile.AddPage(&currPage, whichPage);
-    }
+    handler.readHandler(myDBFile,currPage,whichPage);
     myDBFile.GetPage(&currPage,0);
     whichPage=0;
     currRecord=0;
@@ -82,6 +77,7 @@ void DBFile::MoveFirst () {
 * Method to close the file.
 */
 int DBFile::Close () {
+     myDBFile.AddPage(&currPage, whichPage); 
     return myDBFile.Close();
 }
 
@@ -90,12 +86,9 @@ int DBFile::Close () {
 * Method to add new records given in rec to the current page and file if current page is full.
 */
 void DBFile::Add (Record &rec) {
-    GetLastDirtyPage();
+     handler.writeHandler(myDBFile,currPage,whichPage);
      if(currPage.Append(&rec)==0){
             myDBFile.AddPage(&currPage, whichPage);
-            // if(whichPage==0){ 
-            //     myDBFile.AddPage(&currPage,++whichPage);
-            // }
             whichPage++;
             currPage.EmptyItOut();
             currPage.Append(&rec);
@@ -106,11 +99,12 @@ void DBFile::Add (Record &rec) {
 * Method to get the next record from the file and store it in the fetchme param.
 */
 int DBFile::GetNext (Record &fetchme) { 
-    numRecRead++; 
+    handler.readHandler(myDBFile,currPage,whichPage);
     off_t len=myDBFile.GetLength();
     if(currPage.GetFirst(&fetchme)==0){
         currPage.EmptyItOut();
-        if(++whichPage<len-1){ 
+        if(whichPage+1<len-1){ 
+            ++whichPage;
             myDBFile.GetPage(&currPage,whichPage);
             currPage.GetFirst(&fetchme);
             return 1;
@@ -126,35 +120,21 @@ int DBFile::GetNext (Record &fetchme) {
 * and store it in the fetchme param if matched.
 */
 int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
+    handler.readHandler(myDBFile,currPage,whichPage);
     Record temp; 
     ComparisonEngine comp;
     int res;
     int count=0;
     read_next_record:
         res = GetNext(temp);
-        count++;
-        // cout << "Got new record"; 
+        count++; 
         if (res==0)
             return 0; 
         if(!(comp.Compare(&temp, &literal, &cnf))){
-            // cout << cres << " is Obtained " << count <<"\n"; 
             goto read_next_record;
         }
     fetchme.Consume(&temp);
     return 1; 
-}
-
-/*
-* Method to update the currPage to the lastDirtyPage that was written if any.
-*/
-int DBFile::GetLastDirtyPage(){
-    if(lastDirtyPage==-1){
-        return 0;
-    }
-    whichPage=lastDirtyPage;
-    myDBFile.GetPage(&currPage,whichPage);
-    lastDirtyPage=-1;
-    return 1;
 }
 
 

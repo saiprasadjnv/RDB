@@ -7,11 +7,13 @@
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
+#include "Handler.h"
 
 typedef enum {heap, sorted, tree} fType;
  
 
 class DBFile {
+	friend class Handler;
 
 private:
 	File myDBFile; 
@@ -20,6 +22,7 @@ private:
 	int currRecord;
 	off_t lastDirtyPage; 
 	int numRecRead; 
+	Handler handler;
 public:
 	DBFile (); 
 
@@ -33,7 +36,6 @@ public:
 	void Add (Record &addme);
 	int GetNext (Record &fetchme);
 	int GetNext (Record &fetchme, CNF &cnf, Record &literal);
-	int GetLastDirtyPage();
 
 };
 #endif

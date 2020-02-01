@@ -9,16 +9,17 @@
 #include "ComparisonEngine.h"
 
 typedef enum {heap, sorted, tree} fType;
-
-// stub DBFile header..replace it with your own DBFile.h 
+ 
 
 class DBFile {
 
 private:
 	File myDBFile; 
 	Page currPage;
-	off_t whichPage = 0; 
-	int currRecord=0;
+	off_t whichPage; 
+	int currRecord;
+	off_t lastDirtyPage; 
+	int numRecRead; 
 public:
 	DBFile (); 
 
@@ -32,6 +33,7 @@ public:
 	void Add (Record &addme);
 	int GetNext (Record &fetchme);
 	int GetNext (Record &fetchme, CNF &cnf, Record &literal);
+	int GetLastDirtyPage();
 
 };
 #endif

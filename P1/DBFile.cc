@@ -18,16 +18,14 @@ using namespace std;
 
 DBFile::DBFile () {
     whichPage = 0; 
-	currRecord = 0;
-	lastDirtyPage = -1; 
-	numRecRead = 0; 
+	currRecord = 0;  
 
 }
 /* 
  * Method that creates a new file based on the ftype provided. 
  * Before creating the new file it closes any existing file stream.
  */
-int DBFile::Create (const char *f_path, fType f_type, void *startup) {
+int DBFile::Create (const char *f_path, fType f_type, void *startup) {  
     myDBFile.Close();
     switch(f_type){
         case heap:
@@ -35,11 +33,14 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
             return 1;
         case sorted:
             //In progress
+            break;
         case tree:
             //In progress
+            break;
         default:
-            return 0;
+           return 0;
     }
+    return 0;
 }
 
 /*
@@ -77,7 +78,7 @@ void DBFile::MoveFirst () {
 * Method to close the file.
 */
 int DBFile::Close () {
-     myDBFile.AddPage(&currPage, whichPage); 
+    handler.tearDown(myDBFile,currPage,whichPage);
     return myDBFile.Close();
 }
 

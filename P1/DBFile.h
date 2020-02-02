@@ -9,8 +9,8 @@
 #include "ComparisonEngine.h"
 #include "Handler.h"
 
-typedef enum {heap, sorted, tree} fType;
- 
+typedef enum {heap, sorted, tree} fType; 
+typedef enum {Andy, Breaking, Crazy} typ; 
 
 class DBFile {
 	friend class Handler;
@@ -19,9 +19,7 @@ private:
 	File myDBFile; 
 	Page currPage;
 	off_t whichPage; 
-	int currRecord;
-	off_t lastDirtyPage; 
-	int numRecRead; 
+	int currRecord;  
 	Handler handler;
 public:
 	DBFile (); 

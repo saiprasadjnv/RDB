@@ -4,7 +4,6 @@
 using namespace std;
 
 Handler::Handler(){
-
 }
 
 /*
@@ -32,4 +31,16 @@ int Handler::writeHandler(File &file,Page &curPage,off_t &whichPage){
         currentState='w';
     }
     return 0;
+}
+
+/*
+* Method to perform any pre shutdown tasks.
+*/
+int Handler::tearDown(File &file,Page &curPage,off_t &whichPage){
+    int status=readHandler(file,curPage,whichPage);
+
+}
+
+char Handler::getCurrentState(){
+    return currentState;
 }

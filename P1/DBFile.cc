@@ -62,6 +62,7 @@ void DBFile::Load (Schema &f_schema, const char *loadpath) {
 int DBFile::Open (const char *f_path) {
     myDBFile.Close();
     myDBFile.Open(1, (char *) f_path);
+    handler.init(currPage,whichPage,currRecord);
     return 1;
 }
 
@@ -69,7 +70,7 @@ int DBFile::Open (const char *f_path) {
 * Method to move the pointer to the first data page in the file.
 */
 void DBFile::MoveFirst () {
-    handler.readHandler(myDBFile,currPage,whichPage);
+    handler.readHandler(myDBFile,currPage,whichPage,0);
     myDBFile.GetPage(&currPage,0);
     whichPage=0;
     currRecord=0;
@@ -100,7 +101,7 @@ void DBFile::Add (Record &rec) {
 * Method to get the next record from the file and store it in the fetchme param.
 */
 int DBFile::GetNext (Record &fetchme) { 
-    handler.readHandler(myDBFile,currPage,whichPage);
+    handler.readHandler(myDBFile,currPage,whichPage,currRecord);
     off_t len=myDBFile.GetLength();
     if(currPage.GetFirst(&fetchme)==0){
         currPage.EmptyItOut();
@@ -108,9 +109,11 @@ int DBFile::GetNext (Record &fetchme) {
             ++whichPage;
             myDBFile.GetPage(&currPage,whichPage);
             currPage.GetFirst(&fetchme);
+            currRecord=1;
             return 1;
         }
     }else{
+        currRecord++;
         return 1;
     }
     return 0; 
@@ -121,7 +124,7 @@ int DBFile::GetNext (Record &fetchme) {
 * and store it in the fetchme param if matched.
 */
 int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
-    handler.readHandler(myDBFile,currPage,whichPage);
+    handler.readHandler(myDBFile,currPage,whichPage,currRecord);
     Record temp; 
     ComparisonEngine comp;
     int res;

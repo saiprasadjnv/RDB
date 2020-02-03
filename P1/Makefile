@@ -1,4 +1,4 @@
-CC = g++ -O2 -Wno-deprecated 
+CC = g++ -O2 -Wno-deprecated  
 
 tag = -i
 
@@ -7,14 +7,23 @@ ifdef linux
 tag = -n
 endif
 
-all: test.out main 
 
-test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o test.o
-	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o test.o -ll
+all: test.out main heapfiletest
+
+test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o handler.o DBFile.o y.tab.o lex.yy.o test.o
+	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o handler.o DBFile.o y.tab.o lex.yy.o test.o -ll
 	
-main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o
-	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o lex.yy.o main.o -ll
-	
+main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o handler.o y.tab.o lex.yy.o main.o
+	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o handler.o y.tab.o lex.yy.o main.o -ll
+
+heapfiletest: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o handler.o y.tab.o lex.yy.o heapfiletest.o
+	$(CC) -o heapfiletest Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o handler.o y.tab.o lex.yy.o heapfiletest.o -ll -lpthread -lgtest
+
+heapfiletest.o: HeapFileTest.cc
+	$(CC) -g -c HeapFileTest.cc
+
+handler.o: Handler.cc 
+	$(CC) -g -c Handler.cc 
 
 test.o: test.cc
 	$(CC) -g -c test.cc

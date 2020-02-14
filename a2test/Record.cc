@@ -155,6 +155,7 @@ void Record :: Consume (Record *fromMe) {
 	delete [] bits;
 	bits = fromMe->bits;
 	fromMe->bits = NULL;
+
 }
 
 

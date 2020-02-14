@@ -13,6 +13,7 @@ void *producer (void *arg) {
 	dbfile.Open (rel->path ());
 	cout << " producer: opened DBFile " << rel->path () << endl;
 	dbfile.MoveFirst ();
+
 	while (dbfile.GetNext (temp) == 1) {
 		counter += 1;
 		if (counter%100000 == 0) {

@@ -44,15 +44,11 @@ void Pipe :: Insert (Record *insertMe) {
 	// first, get a mutex on the pipeline
 	pthread_mutex_lock (&pipeMutex);
 
-	Schema mySchema("catalog", "orders"); 
-
 	// next, see if there is space in the pipe for more data; if
 	// there is, then do the insertion
 	if (lastSlot - firstSlot < totSpace) {
 		buffered [lastSlot % totSpace].Consume (insertMe);
-		printf("Inside insert if ********\n");
-		insertMe->Print(&mySchema);
-		printf("Inseide inser*******\n");
+
 	// if there is not, then we need to wait until the consumer
 	// frees up some space in the pipeline
 	} else {
@@ -76,21 +72,17 @@ int Pipe :: Remove (Record *removeMe) {
 	 
 	// first, get a mutex on the pipeline
 	pthread_mutex_lock (&pipeMutex);
-	Schema mySchema("catalog", "orders"); 
-	printf("inside pipe: Buffered: \n"); 
-	
-	//
+
 	// next, see if there is anything in the pipeline; if
 	// there is, then do the removal
 	if (lastSlot != firstSlot) {
-		printf("inside pipe inside if %d \n", firstSlot % totSpace);
-		//buffered[firstSlot % totSpace].Print(&mySchema);	
+		
 		removeMe->Consume (&buffered [firstSlot % totSpace]);
 
 	// if there is not, then we need to wait until the producer
 	// puts some data into the pipeline
 	} else {
-		printf("inside pipe inside else \n");	
+
 		// the pipeline is empty so we first see if this
 		// is because it was turned off
 		if (done) {
@@ -121,8 +113,6 @@ int Pipe :: Remove (Record *removeMe) {
 	
 	// done!
 	pthread_mutex_unlock (&pipeMutex);
-	printf("inside pipe: temp: \n");
-	removeMe->Print(&mySchema);
 	return 1;
 }
 

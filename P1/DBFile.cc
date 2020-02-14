@@ -80,7 +80,8 @@ void DBFile::MoveFirst () {
 */
 int DBFile::Close () {
     handler.tearDown(myDBFile,currPage,whichPage);
-    return myDBFile.Close();
+    myDBFile.Close();
+    return 1;
 }
 
 /*

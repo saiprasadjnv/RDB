@@ -6,7 +6,7 @@
 TEST(DBFileHeapTest,EmptyFileCreationWithHeapFileTypeTest){
     DBFile testFile;
     ASSERT_EQ(1,testFile.Create("testfile.bin",heap,NULL));
-    ASSERT_EQ(0,testFile.Close());
+    ASSERT_EQ(1,testFile.Close());
 }
 
 TEST(DBFileHeapTest,EmptyFileCreationWithInvalidFileTypeSortedTest){

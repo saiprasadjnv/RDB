@@ -4,17 +4,18 @@
 #include <iostream>
 #include "Pipe.h"
 #include "File.h"
-#include "Loser.h"
+#include "Record.h"
+#include "LoserTree.h"
 
 using namespace std;
 
 class BigQ {
-
+private: 
+	typedef void * (*THREADFUNCPTR)(void *); 
 public:
-	Record *records; 
+	LoserTree *myLoserTree; 
 	BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen);
 	~BigQ ();
-	
 };
 
 #endif

@@ -7,8 +7,8 @@ ifdef linux
 tag = -n
 endif
 
-test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o Loser.o BigQ.o Handler.o DBFile.o Pipe.o y.tab.o lex.yy.o test.o
-	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o Loser.o BigQ.o Handler.o DBFile.o Pipe.o y.tab.o lex.yy.o test.o -ll -lpthread
+test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o LoserTree.o BigQ.o Handler.o DBFile.o Pipe.o y.tab.o lex.yy.o test.o
+	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o LoserTree.o BigQ.o Handler.o DBFile.o Pipe.o y.tab.o lex.yy.o test.o -ll -lpthread
 	
 a1test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o Handler.o DBFile.o Pipe.o y.tab.o lex.yy.o a1-test.o
 	$(CC) -o a1test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o Handler.o DBFile.o Pipe.o y.tab.o lex.yy.o a1-test.o -ll
@@ -29,8 +29,8 @@ ComparisonEngine.o: ComparisonEngine.cc
 Pipe.o: Pipe.cc
 	$(CC) -g -c Pipe.cc
 
-Loser.o: Loser.cc
-	$(CC) -g -c Loser.cc
+LoserTree.o: LoserTree.cc
+	$(CC) -g -c LoserTree.cc
 
 BigQ.o: BigQ.cc
 	$(CC) -g -c BigQ.cc
@@ -65,3 +65,4 @@ clean:
 	rm -f y.tab.c
 	rm -f lex.yy.c
 	rm -f y.tab.h
+	rm -f tempFile.bin

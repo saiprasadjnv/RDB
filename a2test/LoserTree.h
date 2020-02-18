@@ -9,7 +9,7 @@
 
 class LoserTree{
 
-private:
+public:
   struct LoserNode{
         long recordIndex;
         long runNumber; 
@@ -45,8 +45,6 @@ private:
     void setupPass2(); 
     void initialize();
     void cleanup();
-
-public:
 
       LoserTree(Pipe &input, Pipe &output, long runNumber, OrderMaker &sortingOrder);
       ~LoserTree(); 

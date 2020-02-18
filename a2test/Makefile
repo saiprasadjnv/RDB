@@ -1,5 +1,5 @@
 
-CC = clang++ -O2 -Wno-deprecated
+CC = clang++ -O2 -Wno-deprecated -std=c++11 
 
 tag = -i
 
@@ -12,7 +12,10 @@ test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o LoserTree.o B
 	
 a1test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o Handler.o DBFile.o Pipe.o y.tab.o lex.yy.o a1-test.o
 	$(CC) -o a1test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o Handler.o DBFile.o Pipe.o y.tab.o lex.yy.o a1-test.o -ll
-	
+
+a2Tests.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o LoserTree.o BigQ.o Handler.o DBFile.o Pipe.o y.tab.o lex.yy.o a2Tests.o 
+	$(CC) -o a2Tests Record.o Comparison.o ComparisonEngine.o Schema.o File.o LoserTree.o BigQ.o Handler.o DBFile.o Pipe.o y.tab.o lex.yy.o a2Tests.o -ll -lpthread -lgtest	
+
 test.o: test.cc
 	$(CC) -g -c test.cc
 
@@ -21,7 +24,9 @@ a1-test.o: a1-test.cc
 
 Comparison.o: Comparison.cc
 	$(CC) -g -c Comparison.cc
-	
+
+a2Tests.o: a2Tests.cc
+	$(CC) -g -c a2Tests.cc
 
 ComparisonEngine.o: ComparisonEngine.cc
 	$(CC) -g -c ComparisonEngine.cc

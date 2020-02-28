@@ -1,5 +1,5 @@
-#ifndef HeapFile_H
-#define HeapFile_H
+#ifndef SortedFile_H
+#define SortedFile_H
 
 #include "TwoWayList.h"
 #include "Record.h"

@@ -31,6 +31,8 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
             return 1;
         case sorted:
 			myFile=new SortedFile();
+			myFile->Create(f_path,startup);
+			myFile->AddMetadata(f_path,startup);
             return 1;
         case tree:
             //In progress
@@ -55,6 +57,7 @@ int DBFile::Open (const char *f_path) {
 	if(strcmp("heap",(const char*)fileType)==0){
 		myFile=new HeapFile();
 	}else if(strcmp("sorted",(const char*)fileType)==0){
+		myFile=new SortedFile();
 
 	}
 	myFile->Open(f_path);

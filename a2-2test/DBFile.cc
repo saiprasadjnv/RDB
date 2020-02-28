@@ -6,6 +6,8 @@
 #include "ComparisonEngine.h"
 #include "DBFile.h"
 #include "Defs.h"
+#include <stdio.h>
+#include <string.h>
 
 
 // stub file .. replace it with your own DBFile.cc
@@ -24,10 +26,12 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
 			// myFile = &heapFile;
 			// myFile->test(); 
 			myFile->Create(f_path, NULL); 
+			myFile->AddMetadata(f_path,startup);
 			// myFile->test(); 
             return 1;
         case sorted:
-            break;
+			myFile=new SortedFile();
+            return 1;
         case tree:
             //In progress
             break;
@@ -43,7 +47,17 @@ void DBFile::Load (Schema &f_schema, char *loadpath) {
 }
 
 int DBFile::Open (const char *f_path) {
-    myFile->Open(f_path);
+	char metaFilePath[100];
+	sprintf(metaFilePath,"%s.meta",f_path);
+	FILE *metaFile=fopen(metaFilePath,"r");
+	char fileType[20];
+	fscanf(metaFile,"%s",fileType);
+	if(strcmp("heap",(const char*)fileType)==0){
+		myFile=new HeapFile();
+	}else if(strcmp("sorted",(const char*)fileType)==0){
+
+	}
+	myFile->Open(f_path);
 	return 1;
 }
 
@@ -61,11 +75,9 @@ void DBFile::Add (Record &rec) {
 }
 
 int DBFile::GetNext (Record &fetchme) {
-    myFile->GetNext(fetchme); 
-	return 0;
+    return myFile->GetNext(fetchme); 
 }
 
 int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
-    myFile->GetNext(fetchme, cnf, literal); 
-	return 1;
+    return myFile->GetNext(fetchme, cnf, literal); 
 }

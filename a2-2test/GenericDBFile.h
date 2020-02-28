@@ -1,3 +1,5 @@
+#ifndef GENERICDBFILE_H
+#define GENERICDBFILE_H
 #include "Defs.h"
 #include "File.h" 
 #include "Record.h" 
@@ -19,4 +21,7 @@ class GenericDBFile {
 	virtual void Add (Record &addme)=0;
 	virtual int GetNext (Record &fetchme)=0;
     virtual int GetNext (Record &fetchme, CNF &cnf, Record &literal)=0;
+	virtual void AddMetadata(const char *fpath,void *startup)=0;
+	virtual void setup(const char *fpath,void *startup)=0;
 }; 
+#endif

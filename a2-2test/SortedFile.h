@@ -7,20 +7,18 @@
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
-#include "HeapFileHandler.h"
 #include "GenericDBFile.h"
 
-class HeapFile: public GenericDBFile{ 
-	friend class HeapFileHandler;
+class SortedFile: public GenericDBFile{ 
 
 private:
 	File myHeapFile; 
 	Page currPage;
 	off_t whichPage; 
 	int currRecord;  
-	HeapFileHandler *handler;
+	// HeapFileHandler *handler;
 public:
-	 HeapFile (); 
+	 SortedFile (); 
 
 	 int Create (const char *fpath, void *startup);
 	 int Open (const char *fpath);

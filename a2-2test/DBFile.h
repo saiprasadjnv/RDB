@@ -7,18 +7,20 @@
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
+#include "HeapFile.h"
 
 typedef enum {heap, sorted, tree} fType;
 
 // stub DBFile header..replace it with your own DBFile.h 
 
 class DBFile {
-
+	// fType fileType;
+	GenericDBFile *myFile; 
 public:
 	DBFile (); 
 
-	int Create (char *fpath, fType file_type, void *startup);
-	int Open (char *fpath);
+	int Create (const char *fpath, fType file_type, void *startup);
+	int Open (const char *fpath);
 	int Close ();
 
 	void Load (Schema &myschema, char *loadpath);

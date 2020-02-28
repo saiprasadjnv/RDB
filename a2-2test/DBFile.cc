@@ -15,13 +15,13 @@ DBFile::DBFile () {
 }
 
 int DBFile::Create (const char *f_path, fType f_type, void *startup) {
-	HeapFile heapFile;
+	// HeapFile heapFile;
 	// GenericDBFile *myFile = &heapFile;
 	// heapFile.test(); 
     switch(f_type){
         case heap:
-			// myFile = new HeapFile();
-			myFile = &heapFile;
+			myFile = new HeapFile();
+			// myFile = &heapFile;
 			// myFile->test(); 
 			myFile->Create(f_path, NULL); 
 			// myFile->test(); 
@@ -44,6 +44,7 @@ void DBFile::Load (Schema &f_schema, char *loadpath) {
 
 int DBFile::Open (const char *f_path) {
     myFile->Open(f_path);
+	return 1;
 }
 
 void DBFile::MoveFirst () {
@@ -52,6 +53,7 @@ void DBFile::MoveFirst () {
 
 int DBFile::Close () {
     myFile->Close(); 
+	return 1;
 }
 
 void DBFile::Add (Record &rec) {
@@ -65,4 +67,5 @@ int DBFile::GetNext (Record &fetchme) {
 
 int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
     myFile->GetNext(fetchme, cnf, literal); 
+	return 1;
 }

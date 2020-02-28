@@ -18,7 +18,7 @@ private:
 	Page currPage;
 	off_t whichPage; 
 	int currRecord;  
-	HeapFileHandler handler;
+	HeapFileHandler *handler;
 public:
 	 HeapFile (); 
 

@@ -43,6 +43,7 @@ int HeapFileHandler::writeHandler(File &file,Page &curPage,off_t &whichPage){
 */
 int HeapFileHandler::tearDown(File &file,Page &curPage,off_t &whichPage){
     int status=readHandler(file,curPage,whichPage,0);
+    return status;
 
 }
 
@@ -71,4 +72,5 @@ int HeapFileHandler::popRecordsFromCurPage(Page &curPage,int recordsToBePopped){
 */
 int HeapFileHandler::init(Page &curPage,off_t &whichPage,int &currentRecord){
     currentState='r';
+    return 1;
 }

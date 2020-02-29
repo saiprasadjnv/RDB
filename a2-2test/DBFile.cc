@@ -30,6 +30,7 @@ int DBFile::Create (const char *f_path, fType f_type, void *startup) {
 			// myFile->test(); 
             return 1;
         case sorted:
+			// printf("Inside DBFile");
 			myFile=new SortedFile();
 			myFile->Create(f_path,startup);
 			myFile->AddMetadata(f_path,startup);

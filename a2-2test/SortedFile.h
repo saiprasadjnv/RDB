@@ -17,6 +17,8 @@ private:
 	off_t whichPage; 
 	int currRecord;  
 	// HeapFileHandler *handler;
+	OrderMaker sortOrder;
+	struct sortInfo {OrderMaker *o; int l;};
 public:
 	 SortedFile (); 
 

@@ -28,6 +28,16 @@ SortedFile::SortedFile () {
 int SortedFile::Create (const char *f_path, void *startup) {  
     myHeapFile.Close();
     myHeapFile.Open(0,(char *)f_path);
+    sortInfo *sort_info=(sortInfo *)startup;
+    int *sortAttr=new int[MAX_ANDS];
+    Type *sortTypeAttr=new Type[MAX_ANDS];
+    int numAttrs=0;
+    sort_info->o->getAttributes(sortAttr,sortTypeAttr,numAttrs);
+    sortOrder.setAttributes(sortAttr,sortTypeAttr,numAttrs);
+    delete[] sortAttr;
+    delete[] sortTypeAttr;
+    // sortOrder=*sort_info->o;
+    // sort_info->o->Print();
     return 1;
 }
 
@@ -131,10 +141,20 @@ int SortedFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
 }
 
 void SortedFile::AddMetadata(const char *fpath,void *startup){
+    printf("Inside AddMetadata");
     char filePath[100];
     sprintf(filePath,"%s.meta",fpath);
     FILE *metaFile=fopen(filePath,"w+");
     fprintf(metaFile,"sorted\n");
+    printf("Inside AddMetadata1");
+    int sortAttr[MAX_ANDS];
+    Type sortTypeAttr[MAX_ANDS];
+    int numAttrs;
+    sortOrder.getAttributes(sortAttr,sortTypeAttr,numAttrs);
+    for(int i=0;i<numAttrs;i++){
+        fprintf(metaFile,"%d %d",sortAttr[i],sortTypeAttr[i]);
+    }
+    fprintf(metaFile,"\n");
     fclose(metaFile);
 }
 

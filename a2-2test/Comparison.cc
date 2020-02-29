@@ -117,11 +117,12 @@ void OrderMaker :: Print () {
 	}
 }
 
-void OrderMaker::getAttributes(int* putAttributes, Type* putTypesHere){
+void OrderMaker::getAttributes(int* putAttributes, Type* putTypesHere, int &numOfAtts){
 	for(int i=0; i< numAtts; i++){
 		putAttributes[i] = whichAtts[i];
 		putTypesHere[i] = whichTypes[i];
 	}
+	numOfAtts = numAtts; 
 }
 
 

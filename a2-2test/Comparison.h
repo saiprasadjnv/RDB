@@ -60,7 +60,7 @@ public:
 	// print to the screen
 	void Print ();
 
-	void getAttributes(int* putAttributesHere, Type* putTypesHere); 
+	void getAttributes(int* putAttributesHere, Type* putTypesHere, int &numOfAtts); 
 	void setAttributes(int* setTheseAttributes, Type* setTheseTypes, int numOfAtts); 
 };
 

@@ -117,6 +117,21 @@ void OrderMaker :: Print () {
 	}
 }
 
+void OrderMaker::getAttributes(int* putAttributes, Type* putTypesHere){
+	for(int i=0; i< numAtts; i++){
+		putAttributes[i] = whichAtts[i];
+		putTypesHere[i] = whichTypes[i];
+	}
+}
+
+
+void OrderMaker::setAttributes(int* setTheseAttributes, Type* setTheseTypes, int numOfAtts){
+	numAtts = numOfAtts; 
+	for(int i=0; i< numAtts; i++){
+		whichAtts[i] = setTheseAttributes[i];
+		whichTypes[i] = setTheseTypes[i];
+	}
+}
 
 int CNF :: GetSortOrders (OrderMaker &left, OrderMaker &right) {
 

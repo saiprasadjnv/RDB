@@ -59,6 +59,9 @@ public:
 
 	// print to the screen
 	void Print ();
+
+	void getAttributes(int* putAttributesHere, Type* putTypesHere); 
+	void setAttributes(int* setTheseAttributes, Type* setTheseTypes, int numOfAtts); 
 };
 
 class Record;

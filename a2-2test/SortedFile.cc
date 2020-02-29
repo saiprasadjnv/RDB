@@ -18,7 +18,10 @@ using namespace std;
 
 SortedFile::SortedFile () {
     whichPage = 0; 
-	currRecord = 0;  
+	currRecord = 0; 
+    inputPipe=nullptr;
+    outputPipe=nullptr; 
+    bigQ=nullptr;
     // handler=new HeapFileHandler();
 }
 /* 
@@ -34,10 +37,9 @@ int SortedFile::Create (const char *f_path, void *startup) {
     int numAttrs=0;
     sort_info->o->getAttributes(sortAttr,sortTypeAttr,numAttrs);
     sortOrder.setAttributes(sortAttr,sortTypeAttr,numAttrs);
+    sortRunLength=sort_info->l;
     delete[] sortAttr;
     delete[] sortTypeAttr;
-    // sortOrder=*sort_info->o;
-    // sort_info->o->Print();
     return 1;
 }
 
@@ -160,6 +162,20 @@ void SortedFile::AddMetadata(const char *fpath,void *startup){
 
 void SortedFile::setup(const char *fpath,void *startup){
     
+}
+
+void SortedFile::initializeBigQ(){
+    if(inputPipe!=nullptr){
+        inputPipe->ShutDown();
+        delete inputPipe;
+    }
+    if(outputPipe!=nullptr){
+        outputPipe->ShutDown();
+        delete outputPipe;
+    }
+    inputPipe=new Pipe(100);
+    outputPipe=new Pipe(100);
+    bigQ=new BigQ(*inputPipe,*outputPipe,sortOrder,sortRunLength);
 }
 
 

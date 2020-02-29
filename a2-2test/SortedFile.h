@@ -8,6 +8,8 @@
 #include "Comparison.h"
 #include "ComparisonEngine.h"
 #include "GenericDBFile.h"
+#include "BigQ.h"
+#include "Pipe.h"
 
 class SortedFile: public GenericDBFile{ 
 
@@ -18,7 +20,11 @@ private:
 	int currRecord;  
 	// HeapFileHandler *handler;
 	OrderMaker sortOrder;
+	int sortRunLength;
 	struct sortInfo {OrderMaker *o; int l;};
+	BigQ *bigQ;
+	Pipe *inputPipe;
+	Pipe *outputPipe;
 public:
 	 SortedFile (); 
 
@@ -34,6 +40,7 @@ public:
 	 int GetNext (Record &fetchme, CNF &cnf, Record &literal);
 	 void AddMetadata(const char *fpath,void *startup);
 	 void setup(const char *fpath,void *startup);
+	 void initializeBigQ();
 
 };
 #endif

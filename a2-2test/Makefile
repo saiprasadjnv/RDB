@@ -9,20 +9,20 @@ endif
 
 all: main test1.out test.out
 
-main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o main.o
-	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o main.o -ll
+main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o main.o
+	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o main.o -ll -lpthread
 
-test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o GenericDBFile.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o Pipe.o y.tab.o lex.yy.o test.o
-	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o GenericDBFile.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o Pipe.o y.tab.o lex.yy.o test.o -ll -lpthread
+test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o  LoserTree.o BigQ.o GenericDBFile.o Pipe.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test.o
+	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o  LoserTree.o BigQ.o GenericDBFile.o Pipe.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test.o -ll -lpthread
 	
-test1.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test1.o
-	$(CC) -o test1.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test1.o -ll
+test1.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test1.o
+	$(CC) -o test1.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test1.o -ll -lpthread
 
-a2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o GenericDBFile.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o Pipe.o y.tab.o lex.yy.o a2-test.o
-	$(CC) -o a2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o GenericDBFile.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o Pipe.o y.tab.o lex.yy.o a2-test.o -ll -lpthread
+a2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o GenericDBFile.o Pipe.o LoserTree.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a2-test.o
+	$(CC) -o a2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o GenericDBFile.o Pipe.o LoserTree.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a2-test.o -ll -lpthread
 
-a1test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o Pipe.o y.tab.o lex.yy.o a1-test.o
-	$(CC) -o a1test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o Pipe.o y.tab.o lex.yy.o a1-test.o -ll
+a1test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a1-test.o
+	$(CC) -o a1test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a1-test.o -ll -lpthread
 
 test.o: test.cc
 	$(CC) -g -c test.cc
@@ -47,6 +47,9 @@ Pipe.o: Pipe.cc
 
 BigQ.o: BigQ.cc
 	$(CC) -g -c BigQ.cc
+
+LoserTree.o : LoserTree.cc
+	$(CC) -g -c LoserTree.cc
 
 GenericDBFile.o: GenericDBFile.cc
 	$(CC) -g -c GenericDBFile.cc

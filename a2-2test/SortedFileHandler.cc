@@ -40,9 +40,14 @@ int SortedFileHandler::writeHandler(File &file,Page &curPage,off_t &whichPage){
 		outputPipe=new Pipe(100);
 		// consumerArgs consumerInfo={outputPipe,f_path};
 		// pthread_create(&consumerThread,NULL,SortedFileHandler::consumer,(void *)&consumerInfo);
-		bigQArgs bigqArgs={inputPipe,outputPipe,*sortOrder,runlength};
-		pthread_create(&bigQThread,NULL,SortedFileHandler::bigq,(void*)&bigqArgs);
+		bigQArgs *bigqArgs= new bigQArgs();
+		bigqArgs->inputPipe=inputPipe;
+		bigqArgs->outputPipe=outputPipe;
+		bigqArgs->runlen=runlength;
+		bigqArgs->sortedOrder= *sortOrder; 
+		pthread_create(&bigQThread,NULL,this->bigq,(void*)bigqArgs);
 		currentState='w';
+		// pthread_join(bigQThread,NULL); 
     	return 1;
     }
     return 0;
@@ -85,28 +90,10 @@ int SortedFileHandler::init(Page &curPage,off_t &whichPage,int &currentRecord){
     return 1;
 }
 
-// void* SortedFileHandler::consumer (void *arg) {
-//     consumerArgs* t= (consumerArgs *)arg;
-// 	ComparisonEngine ceng;
-
-// 	HeapFile tempBigQFile;
-// 	char outfile[100];
-// 		sprintf (outfile, "%s.bigq", t->fPath);
-// 		tempBigQFile.Create ((const char *)outfile,NULL);
-
-// 	int err = 0;
-// 	int i = 0;
-
-// 	Record temp;
-
-// 	while (t->outputPipe->Remove(&temp)) {
-// 		tempBigQFile.Add(temp);
-// 	}
-// 	tempBigQFile.Close();
-// }
-
 void* SortedFileHandler::bigq(void * arg){
 	bigQArgs *bigqArgs=(bigQArgs*)arg;
+	printf("Inside bigq runlen: %ld \n", bigqArgs->runlen);
+	bigqArgs->sortedOrder.Print(); 
 	BigQ bigq(*bigqArgs->inputPipe,*bigqArgs->outputPipe,bigqArgs->sortedOrder,bigqArgs->runlen);
 }
 

@@ -1,10 +1,15 @@
 #include "BigQ.h"
 
 BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
-	
+	printf("Bigq constructor:\n");
+	Record temp1; 
+	// int result = in.Remove(&temp1); 
+// m
+// 	printf("INpipe address in BIgq file: %ld\n", &in);
+//     printf("outpipe address in bigq file: %ld\n", &out);
 	myLoserTree = new  LoserTree(in,out,runlen, sortorder); 
 	pthread_t sortingThread; 
-	Record temp1;  
+ 
 	Schema mySchema ("catalog", "lineitem"); 
 	long i =0; 
 	// in.Remove(&temp1);

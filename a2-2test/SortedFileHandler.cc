@@ -7,6 +7,8 @@ using namespace std;
 
 SortedFileHandler::SortedFileHandler(){
     currentReadPage=0;
+	inputPipe = nullptr; 
+	outputPipe = nullptr;
 }
 
 /*
@@ -14,8 +16,9 @@ SortedFileHandler::SortedFileHandler(){
 */
 int SortedFileHandler::readHandler(File &file,Page &curPage,off_t &whichPage,int lastReadRecord){
     if(currentState=='w'){
-		inputPipe->ShutDown();
+		inputPipe->ShutDown();	
 		mergeNewRecords(file,outputPipe);
+		// pthread_join(bigQThread,NULL);
 
         // file.AddPage(&curPage,whichPage);
         // file.GetPage(&curPage,currentReadPage);
@@ -32,12 +35,18 @@ int SortedFileHandler::readHandler(File &file,Page &curPage,off_t &whichPage,int
 */
 int SortedFileHandler::writeHandler(File &file,Page &curPage,off_t &whichPage){
     if(currentState=='r'){
-		printf("Inside writeHandler");
+		// printf("Inside writeHandler");
         currentReadPage=whichPage;
+		// delete inputPipe;
+		// delete outputPipe;
+		// printf("INpipe address in before create file: %ld\n", inputPipe);
+	 	// printf("outpipe address in before create file: %ld\n", outputPipe);
 		// delete inputPipe;
 		// delete outputPipe;
 		inputPipe=new Pipe(100);
 		outputPipe=new Pipe(100);
+		// printf("INpipe address in after create file: %ld\n", inputPipe);
+	 	// printf("outpipe address in after create file: %ld\n", outputPipe);
 		// consumerArgs consumerInfo={outputPipe,f_path};
 		// pthread_create(&consumerThread,NULL,SortedFileHandler::consumer,(void *)&consumerInfo);
 		bigQArgs *bigqArgs= new bigQArgs();
@@ -45,6 +54,9 @@ int SortedFileHandler::writeHandler(File &file,Page &curPage,off_t &whichPage){
 		bigqArgs->outputPipe=outputPipe;
 		bigqArgs->runlen=runlength;
 		bigqArgs->sortedOrder= *sortOrder; 
+		// printf("*******inside writehandler*****\n");
+		//  printf("INpipe address in bigqArgs file: %ld\n", bigqArgs->inputPipe);
+	 	// printf("outpipe address in bigqArgs file: %ld\n", bigqArgs->outputPipe);
 		pthread_create(&bigQThread,NULL,this->bigq,(void*)bigqArgs);
 		currentState='w';
 		// pthread_join(bigQThread,NULL); 
@@ -92,7 +104,12 @@ int SortedFileHandler::init(Page &curPage,off_t &whichPage,int &currentRecord){
 
 void* SortedFileHandler::bigq(void * arg){
 	bigQArgs *bigqArgs=(bigQArgs*)arg;
-	printf("Inside bigq runlen: %ld \n", bigqArgs->runlen);
+	// printf("Inside bigq runlen: %ld \n", bigqArgs->runlen);
+	//  printf("INpipe address in bigQthread file: %ld\n", bigqArgs->inputPipe);
+	//  printf("outpipe address in bigQthread file: %ld\n", bigqArgs->outputPipe);
+	//Record temp1; 
+	//int result = bigqArgs->inputPipe->Remove(&temp1); 
+	// printf("Result after remove: %d\n", result);
 	bigqArgs->sortedOrder.Print(); 
 	BigQ bigq(*bigqArgs->inputPipe,*bigqArgs->outputPipe,bigqArgs->sortedOrder,bigqArgs->runlen);
 }
@@ -100,60 +117,69 @@ void* SortedFileHandler::bigq(void * arg){
 void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 	Record *temp1=new Record();
 	Record *temp2=new Record;
-	// file.Close();
+	file.Close();
 	char newFile[100];
-	printf("%s",f_path);
+	// printf("%s",f_path);
 	sprintf(newFile,"%s.tmp",f_path);
-	HeapFile tmpFile;
-	tmpFile.Create((const char*)newFile,NULL);
-	HeapFile mainFile;
-	mainFile.Open((const char*)f_path);
-	if(!outputPipe->Remove(temp1)){
+	HeapFile *tmpFile = new HeapFile;
+	tmpFile->Create((const char*)newFile,NULL);
+	HeapFile *mainFile = new HeapFile();
+	long i=0;
+	Schema mySchema ("catalog", "lineitem");
+	mainFile->Open((const char*)f_path);
+	if(outputPipe->Remove(temp1) == 0 ){
+		// printf("Setting temp1 to null\n");
 		temp1=nullptr;
 	}
-	if(!mainFile.GetNext(*temp2)){
+	if(mainFile->GetNext(*temp2) == 0){
+		// printf("Setting temp2 to null\n");
 		temp2=nullptr;
 	}
 	ComparisonEngine cEngine;
 	while(temp1!=nullptr || temp2!=nullptr){
 		if(temp1!=nullptr && temp2!=nullptr){
 			if(cEngine.Compare(temp1,temp2,sortOrder)<=0){
-				tmpFile.Add(*temp1);
+				tmpFile->Add(*temp1);
 				delete temp1;
 				temp1=new Record();
 				if(!outputPipe->Remove(temp1)){
 					temp1=nullptr;
 				}
 			}else{
-				tmpFile.Add(*temp2);
+				tmpFile->Add(*temp2);
 				delete temp2;
 				temp2=new Record();
-				if(!mainFile.GetNext(*temp2)){
+				if(!mainFile->GetNext(*temp2)){
 					temp2=nullptr;
 				}
 
 			}
 		}else if(temp1==nullptr){
 			//temp2
-				tmpFile.Add(*temp2);
+				tmpFile->Add(*temp2);
 				delete temp2;
 				temp2=new Record();
-				if(!mainFile.GetNext(*temp2)){
+				if(!mainFile->GetNext(*temp2)){
 					temp2=nullptr;
 				}
 		}else if(temp2==nullptr){
 			//temp1
-				tmpFile.Add(*temp1);
+				tmpFile->Add(*temp1);
 				delete temp1;
+				// printf("i: %ld\n",i++);
+				// temp1->Print(&mySchema);
+				
 				temp1=new Record();
 				if(!outputPipe->Remove(temp1)){
+					// printf("Read all the records from oupipe\n");
 					temp1=nullptr;
 				}
 
 		}
+		
 	}
-	tmpFile.Close();
-	// mainFile.Close();
-	
+	// outputPipe->ShutDown();
+	tmpFile->Close();
+	mainFile->Close();
 
 }

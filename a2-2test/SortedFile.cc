@@ -19,8 +19,8 @@ using namespace std;
 SortedFile::SortedFile () {
     whichPage = 0; 
 	currRecord = 0; 
-    inputPipe=new Pipe(100);
-    outputPipe=new Pipe(100); 
+    inputPipe=nullptr;
+    outputPipe=nullptr; 
     bigQ=nullptr;
     printf("before");
     sortFileHandler=new SortedFileHandler();
@@ -38,9 +38,9 @@ int SortedFile::Create (const char *f_path, void *startup) {
     sortFileHandler->f_path=(char *)f_path;
     sortFileHandler->sortOrder=sort_info->o;
     sortFileHandler->runlength=sort_info->l;
-    sortFileHandler->inputPipe=inputPipe;
-    sortFileHandler->outputPipe=outputPipe;
-    printf("Inside create");
+    // sortFileHandler->inputPipe=inputPipe;
+    // sortFileHandler->outputPipe=outputPipe;
+    // printf("Inside create");
     int *sortAttr=new int[MAX_ANDS];
     Type *sortTypeAttr=new Type[MAX_ANDS];
     int numAttrs=0;
@@ -59,9 +59,14 @@ int SortedFile::Create (const char *f_path, void *startup) {
 void SortedFile::Load (Schema &f_schema, const char *loadpath) {
     FILE *tableFile = fopen (loadpath, "r"); 
     Record temp;
+    int i=0;
+    // while(i++ <40000){
+    // printf("i: %d \n", i); 
+    // temp.SuckNextRecord(&f_schema,tableFile);
     while (temp.SuckNextRecord(&f_schema,tableFile)==1){
         Add(temp);
-    }
+        // Close();
+     }
     // myHeapFile.AddPage(&currPage, whichPage);
 }
 
@@ -101,18 +106,12 @@ int SortedFile::Close () {
 */
 void SortedFile::Add (Record &rec) {
     //  handler->writeHandler(myHeapFile,currPage,whichPage);
+    // Schema mySchema("catalog", "lineitem");
+    // rec.Print(&mySchema);  
     sortFileHandler->writeHandler(myHeapFile,currPage,whichPage);
-    printf("In add");
-    if(inputPipe==nullptr){
-        printf("yes");
-    }
-    inputPipe->Insert(&rec);
-    //  if(currPage.Append(&rec)==0){
-    //         myHeapFile.AddPage(&currPage, whichPage);
-    //         whichPage++;
-    //         currPage.EmptyItOut();
-    //         currPage.Append(&rec);
-    //     }
+    // printf("INpipe address in sorted file: %ld\n", inputPipe);
+    // printf("outpipe address in sorted file: %ld\n", outputPipe);
+    sortFileHandler->inputPipe->Insert(&rec);
 }
 
 /*
@@ -160,12 +159,12 @@ int SortedFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
 }
 
 void SortedFile::AddMetadata(const char *fpath,void *startup){
-    printf("Inside AddMetadata");
+    // printf("Inside AddMetadata");
     char filePath[100];
     sprintf(filePath,"%s.meta",fpath);
     FILE *metaFile=fopen(filePath,"w+");
     fprintf(metaFile,"sorted\n");
-    printf("Inside AddMetadata1");
+    // printf("Inside AddMetadata1");
     int sortAttr[MAX_ANDS];
     Type sortTypeAttr[MAX_ANDS];
     int numAttrs;

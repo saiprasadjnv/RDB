@@ -9,20 +9,20 @@ endif
 
 all: main test1.out test.out
 
-main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o main.o
-	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o main.o -ll -lpthread
+main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o main.o
+	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o main.o -ll -lpthread
 
-test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o  LoserTree.o BigQ.o GenericDBFile.o Pipe.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test.o
-	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o  LoserTree.o BigQ.o GenericDBFile.o Pipe.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test.o -ll -lpthread
+test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o  LoserTree.o BigQ.o GenericDBFile.o Pipe.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test.o
+	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o  LoserTree.o BigQ.o GenericDBFile.o Pipe.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test.o -ll -lpthread
 	
-test1.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test1.o
-	$(CC) -o test1.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test1.o -ll -lpthread
+test1.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test1.o
+	$(CC) -o test1.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o test1.o -ll -lpthread
 
-a2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o GenericDBFile.o Pipe.o LoserTree.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a2-test.o
-	$(CC) -o a2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o GenericDBFile.o Pipe.o LoserTree.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a2-test.o -ll -lpthread
+a2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o GenericDBFile.o Pipe.o LoserTree.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a2-test.o
+	$(CC) -o a2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o GenericDBFile.o Pipe.o LoserTree.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a2-test.o -ll -lpthread
 
-a1test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a1-test.o
-	$(CC) -o a1test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a1-test.o -ll -lpthread
+a1test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a1-test.o
+	$(CC) -o a1test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a1-test.o -ll -lpthread
 
 test.o: test.cc
 	$(CC) -g -c test.cc
@@ -65,6 +65,9 @@ HeapFileHandler.o: HeapFileHandler.cc
 
 SortedFile.o: SortedFile.cc
 	$(CC) -g -c SortedFile.cc
+
+SortedFileHandler.o: SortedFileHandler.cc
+	$(CC) -g -c SortedFileHandler.cc
 
 File.o: File.cc
 	$(CC) -g -c File.cc

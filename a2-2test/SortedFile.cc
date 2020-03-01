@@ -19,9 +19,12 @@ using namespace std;
 SortedFile::SortedFile () {
     whichPage = 0; 
 	currRecord = 0; 
-    inputPipe=nullptr;
-    outputPipe=nullptr; 
+    inputPipe=new Pipe(100);
+    outputPipe=new Pipe(100); 
     bigQ=nullptr;
+    printf("before");
+    sortFileHandler=new SortedFileHandler();
+    printf("after");
     // handler=new HeapFileHandler();
 }
 /* 
@@ -32,6 +35,12 @@ int SortedFile::Create (const char *f_path, void *startup) {
     myHeapFile.Close();
     myHeapFile.Open(0,(char *)f_path);
     sortInfo *sort_info=(sortInfo *)startup;
+    sortFileHandler->f_path=(char *)f_path;
+    sortFileHandler->sortOrder=sort_info->o;
+    sortFileHandler->runlength=sort_info->l;
+    sortFileHandler->inputPipe=inputPipe;
+    sortFileHandler->outputPipe=outputPipe;
+    printf("Inside create");
     int *sortAttr=new int[MAX_ANDS];
     Type *sortTypeAttr=new Type[MAX_ANDS];
     int numAttrs=0;
@@ -53,7 +62,7 @@ void SortedFile::Load (Schema &f_schema, const char *loadpath) {
     while (temp.SuckNextRecord(&f_schema,tableFile)==1){
         Add(temp);
     }
-    myHeapFile.AddPage(&currPage, whichPage);
+    // myHeapFile.AddPage(&currPage, whichPage);
 }
 
 /*
@@ -80,6 +89,8 @@ void SortedFile::MoveFirst () {
 */
 int SortedFile::Close () {
     // handler->tearDown(myHeapFile,currPage,whichPage);
+    // sortFileHandler->readHandler(myHeapFile,currPage,whichPage,0,)
+    sortFileHandler->tearDown(myHeapFile,currPage,whichPage);
     myHeapFile.Close();
     return 1;
 }
@@ -90,12 +101,18 @@ int SortedFile::Close () {
 */
 void SortedFile::Add (Record &rec) {
     //  handler->writeHandler(myHeapFile,currPage,whichPage);
-     if(currPage.Append(&rec)==0){
-            myHeapFile.AddPage(&currPage, whichPage);
-            whichPage++;
-            currPage.EmptyItOut();
-            currPage.Append(&rec);
-        }
+    sortFileHandler->writeHandler(myHeapFile,currPage,whichPage);
+    printf("In add");
+    if(inputPipe==nullptr){
+        printf("yes");
+    }
+    inputPipe->Insert(&rec);
+    //  if(currPage.Append(&rec)==0){
+    //         myHeapFile.AddPage(&currPage, whichPage);
+    //         whichPage++;
+    //         currPage.EmptyItOut();
+    //         currPage.Append(&rec);
+    //     }
 }
 
 /*
@@ -162,20 +179,6 @@ void SortedFile::AddMetadata(const char *fpath,void *startup){
 
 void SortedFile::setup(const char *fpath,void *startup){
     
-}
-
-void SortedFile::initializeBigQ(){
-    if(inputPipe!=nullptr){
-        inputPipe->ShutDown();
-        delete inputPipe;
-    }
-    if(outputPipe!=nullptr){
-        outputPipe->ShutDown();
-        delete outputPipe;
-    }
-    inputPipe=new Pipe(100);
-    outputPipe=new Pipe(100);
-    bigQ=new BigQ(*inputPipe,*outputPipe,sortOrder,sortRunLength);
 }
 
 

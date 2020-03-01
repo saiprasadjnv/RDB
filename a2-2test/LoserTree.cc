@@ -47,6 +47,7 @@ LoserTree::~LoserTree(){
 
 
 void *LoserTree::sort(void * args){
+    printf("IN sort");
     LoserTree *thisNode = (LoserTree *)args; 
     thisNode->pass1(); 
     thisNode-> pass2(); 

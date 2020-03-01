@@ -10,6 +10,7 @@
 #include "GenericDBFile.h"
 #include "BigQ.h"
 #include "Pipe.h"
+#include "SortedFileHandler.h"
 
 class SortedFile: public GenericDBFile{ 
 
@@ -25,6 +26,7 @@ private:
 	BigQ *bigQ;
 	Pipe *inputPipe;
 	Pipe *outputPipe;
+	SortedFileHandler *sortFileHandler;
 public:
 	 SortedFile (); 
 
@@ -40,7 +42,6 @@ public:
 	 int GetNext (Record &fetchme, CNF &cnf, Record &literal);
 	 void AddMetadata(const char *fpath,void *startup);
 	 void setup(const char *fpath,void *startup);
-	 void initializeBigQ();
 
 };
 #endif

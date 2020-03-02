@@ -83,6 +83,7 @@ void SortedFile::Load (Schema &f_schema, const char *loadpath) {
 */
 int SortedFile::Open (const char *f_path) {
     mySortedFile.Close();
+    // printf("In sortedfile open\n");
     mySortedFile.Open(1, (char *) f_path);
     setup(f_path,NULL);
     // handler->init(currPage,whichPage,currRecord);
@@ -116,9 +117,11 @@ int SortedFile::Close () {
 */
 void SortedFile::Add (Record &rec) {
     //  handler->writeHandler(mySortedFile,currPage,whichPage);
-    // Schema mySchema("catalog", "lineitem");
-    // rec.Print(&mySchema);  
+    // Schema mySchema("catalog", "customer");
+    // rec.Print(&mySchema); 
+    // printf("In add sortedfile\n"); 
     sortFileHandler->writeHandler(mySortedFile,currPage,whichPage);
+    // printf("In add sortedfile after writehandler call\n"); 
     // printf("INpipe address in sorted file: %ld\n", inputPipe);
     // printf("outpipe address in sorted file: %ld\n", outputPipe);
     sortFileHandler->inputPipe->Insert(&rec);
@@ -193,6 +196,7 @@ void SortedFile::AddMetadata(const char *fpath,void *startup){
     sprintf(filePath,"%s.meta",fpath);
     FILE *metaFile=fopen(filePath,"w+");
     fprintf(metaFile,"sorted\n");
+    fprintf(metaFile,"%ld\n",sortRunLength);
     // printf("Inside AddMetadata1");
     int sortAttr[MAX_ANDS];
     Type sortTypeAttr[MAX_ANDS];
@@ -213,6 +217,8 @@ void SortedFile::setup(const char *fpath,void *startup){
     FILE *metaFile=fopen(metaFilePath,"r");
 	char fileType[20];
 	fscanf(metaFile,"%s",fileType);
+    long runLength=0;
+    fscanf(metaFile,"%ld",&runLength);
     int sortAttr[MAX_ANDS];
     Type sortTypeAttr[MAX_ANDS];
     if(storedSortOrder!=nullptr){
@@ -235,6 +241,13 @@ void SortedFile::setup(const char *fpath,void *startup){
     storedSortOrder->setAttributes(sortAttr,sortTypeAttr,numAttrs);
     // storedSortOrder->Print();
     fclose(metaFile);
+    sortFileHandler->f_path=(char*)fpath;
+    // printf("filepath after read:%s\n",sortFileHandler->f_path);
+    sortFileHandler->sortOrder=storedSortOrder;
+    // sortFileHandler->sortOrder->Print();
+    sortRunLength=runLength;
+    sortFileHandler->runlength=sortRunLength;
+    // printf("runlength after read:%ld\n",sortFileHandler->runlength);
 }
 
 int SortedFile::ConstructQueryOrderMaker(CNF &cnf){

@@ -9,6 +9,7 @@ SortedFileHandler::SortedFileHandler(){
     currentReadPage=0;
 	inputPipe = nullptr; 
 	outputPipe = nullptr;
+	sortOrder=nullptr;
 }
 
 /*

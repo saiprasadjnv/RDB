@@ -8,12 +8,19 @@ void test3 ();
 int add_data (FILE *src, int numrecs, int &res) {
 	DBFile dbfile;
 	dbfile.Open (rel->path ());
+	// printf("path:%s\n",rel->path());
+	// printf("numRecs:%ld\n",numrecs);
+	// printf("%d,%d\n",sizeof(numrecs),INT32_MAX);
 	Record temp;
 
 	int proc = 0;
 	int xx = 20000;
 	while ((res = temp.SuckNextRecord (rel->schema (), src)) && ++proc < numrecs) {
+		// temp.Print(rel->schema());
+		// cout << rel->schema()->GetNumAtts() << " numAtts in schema\n"; 
+		// printf("%d\n",proc);
 		dbfile.Add (temp);
+		// printf("After add in test\n");
 		if (proc == xx) cerr << "\t ";
 		if (proc % xx == 0) cerr << ".";
 	}
@@ -30,11 +37,11 @@ void test1 () {
 	OrderMaker o;
 	rel->get_sort_order (o);
 
-	int runlen = 0;
-	while (runlen < 1) {
-		cout << "\t\n specify runlength:\n\t ";
-		cin >> runlen;
-	}
+	int runlen = 8;
+	// while (runlen < 1) {
+	// 	cout << "\t\n specify runlength:\n\t ";
+	// 	cin >> runlen;
+	// }
 	struct {OrderMaker *o; int l;} startup = {&o, runlen};
 
 	DBFile dbfile;
@@ -59,6 +66,7 @@ void test1 () {
 			cout << " \t 2. add a lot (1k to 1e+06 recs) \n";
 			cout << " \t 3. run some query \n \t ";
 			cin >> x;
+			x=2;
 		}
 		if (x < 3) {
 			proc = add_data (tblfile,lrand48()%(int)pow(1e3,x)+(x-1)*1000, res);

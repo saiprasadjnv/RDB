@@ -14,6 +14,7 @@
 #include "string"
 #include <iostream>
 #include <stdio.h>
+#include "string.h"
 using namespace std;
 
 SortedFile::SortedFile () {
@@ -21,19 +22,23 @@ SortedFile::SortedFile () {
 	currRecord = 0; 
     inputPipe=nullptr;
     outputPipe=nullptr; 
-    bigQ=nullptr;
-    printf("before");
+    // bigQ=nullptr;
+    // printf("before");
     sortFileHandler=new SortedFileHandler();
-    printf("after");
+    storedSortOrder=nullptr;
+    // printf("after");
     // handler=new HeapFileHandler();
+}
+SortedFile::~SortedFile(){
+    delete sortFileHandler;
 }
 /* 
  * Method that creates a new file based on the ftype provided. 
  * Before creating the new file it closes any existing file stream.
  */
 int SortedFile::Create (const char *f_path, void *startup) {  
-    myHeapFile.Close();
-    myHeapFile.Open(0,(char *)f_path);
+    mySortedFile.Close();
+    mySortedFile.Open(0,(char *)f_path);
     sortInfo *sort_info=(sortInfo *)startup;
     sortFileHandler->f_path=(char *)f_path;
     sortFileHandler->sortOrder=sort_info->o;
@@ -41,8 +46,8 @@ int SortedFile::Create (const char *f_path, void *startup) {
     // sortFileHandler->inputPipe=inputPipe;
     // sortFileHandler->outputPipe=outputPipe;
     // printf("Inside create");
-    int *sortAttr=new int[MAX_ANDS];
-    Type *sortTypeAttr=new Type[MAX_ANDS];
+    int *sortAttr=new int[20];
+    Type *sortTypeAttr=new Type[20];
     int numAttrs=0;
     sort_info->o->getAttributes(sortAttr,sortTypeAttr,numAttrs);
     sortOrder.setAttributes(sortAttr,sortTypeAttr,numAttrs);
@@ -67,15 +72,16 @@ void SortedFile::Load (Schema &f_schema, const char *loadpath) {
         Add(temp);
         // Close();
      }
-    // myHeapFile.AddPage(&currPage, whichPage);
+    // mySortedFile.AddPage(&currPage, whichPage);
 }
 
 /*
 * Method to open the given filepath(f_path) in read/write mode.
 */
 int SortedFile::Open (const char *f_path) {
-    myHeapFile.Close();
-    myHeapFile.Open(1, (char *) f_path);
+    mySortedFile.Close();
+    mySortedFile.Open(1, (char *) f_path);
+    setup(f_path,NULL);
     // handler->init(currPage,whichPage,currRecord);
     return 1;
 }
@@ -84,8 +90,8 @@ int SortedFile::Open (const char *f_path) {
 * Method to move the pointer to the first data page in the file.
 */
 void SortedFile::MoveFirst () {
-    // handler->readHandler(myHeapFile,currPage,whichPage,0);
-    myHeapFile.GetPage(&currPage,0);
+    // handler->readHandler(mySortedFile,currPage,whichPage,0);
+    mySortedFile.GetPage(&currPage,0);
     whichPage=0;
     currRecord=0;
 }
@@ -93,10 +99,10 @@ void SortedFile::MoveFirst () {
 * Method to close the file.
 */
 int SortedFile::Close () {
-    // handler->tearDown(myHeapFile,currPage,whichPage);
-    // sortFileHandler->readHandler(myHeapFile,currPage,whichPage,0,)
-    sortFileHandler->tearDown(myHeapFile,currPage,whichPage);
-    myHeapFile.Close();
+    // handler->tearDown(mySortedFile,currPage,whichPage);
+    // sortFileHandler->readHandler(mySortedFile,currPage,whichPage,0,)
+    sortFileHandler->tearDown(mySortedFile,currPage,whichPage);
+    mySortedFile.Close();
     return 1;
 }
 
@@ -105,10 +111,10 @@ int SortedFile::Close () {
 * Method to add new records given in rec to the current page and file if current page is full.
 */
 void SortedFile::Add (Record &rec) {
-    //  handler->writeHandler(myHeapFile,currPage,whichPage);
+    //  handler->writeHandler(mySortedFile,currPage,whichPage);
     // Schema mySchema("catalog", "lineitem");
     // rec.Print(&mySchema);  
-    sortFileHandler->writeHandler(myHeapFile,currPage,whichPage);
+    sortFileHandler->writeHandler(mySortedFile,currPage,whichPage);
     // printf("INpipe address in sorted file: %ld\n", inputPipe);
     // printf("outpipe address in sorted file: %ld\n", outputPipe);
     sortFileHandler->inputPipe->Insert(&rec);
@@ -118,13 +124,14 @@ void SortedFile::Add (Record &rec) {
 * Method to get the next record from the file and store it in the fetchme param.
 */
 int SortedFile::GetNext (Record &fetchme) { 
-    // handler->readHandler(myHeapFile,currPage,whichPage,currRecord);
-    off_t len=myHeapFile.GetLength();
+    // handler->readHandler(mySortedFile,currPage,whichPage,currRecord);
+    sortFileHandler->readHandler(mySortedFile,currPage,whichPage,currRecord);
+    off_t len=mySortedFile.GetLength();
     if(currPage.GetFirst(&fetchme)==0){
         currPage.EmptyItOut();
         if(whichPage+1<len-1){ 
             ++whichPage;
-            myHeapFile.GetPage(&currPage,whichPage);
+            mySortedFile.GetPage(&currPage,whichPage);
             currPage.GetFirst(&fetchme);
             currRecord=1;
             return 1;
@@ -141,7 +148,7 @@ int SortedFile::GetNext (Record &fetchme) {
 * and store it in the fetchme param if matched.
 */
 int SortedFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
-    // handler->readHandler(myHeapFile,currPage,whichPage,currRecord);
+    // handler->readHandler(mySortedFile,currPage,whichPage,currRecord);
     Record temp; 
     ComparisonEngine comp;
     int res;
@@ -159,7 +166,7 @@ int SortedFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
 }
 
 void SortedFile::AddMetadata(const char *fpath,void *startup){
-    // printf("Inside AddMetadata");
+    // printf("Inside AddMetadata\n");
     char filePath[100];
     sprintf(filePath,"%s.meta",fpath);
     FILE *metaFile=fopen(filePath,"w+");
@@ -168,16 +175,44 @@ void SortedFile::AddMetadata(const char *fpath,void *startup){
     int sortAttr[MAX_ANDS];
     Type sortTypeAttr[MAX_ANDS];
     int numAttrs;
+    // sortOrder.Print();
     sortOrder.getAttributes(sortAttr,sortTypeAttr,numAttrs);
     for(int i=0;i<numAttrs;i++){
-        fprintf(metaFile,"%d %d",sortAttr[i],sortTypeAttr[i]);
+        fprintf(metaFile,"%d %d ",sortAttr[i],sortTypeAttr[i]);
     }
     fprintf(metaFile,"\n");
     fclose(metaFile);
 }
 
 void SortedFile::setup(const char *fpath,void *startup){
-    
+    // printf("In setup\n");
+    char metaFilePath[100];
+	sprintf(metaFilePath,"%s.meta",fpath);
+    FILE *metaFile=fopen(metaFilePath,"r");
+	char fileType[20];
+	fscanf(metaFile,"%s",fileType);
+    int sortAttr[MAX_ANDS];
+    Type sortTypeAttr[MAX_ANDS];
+    if(storedSortOrder!=nullptr){
+        delete storedSortOrder;
+    }
+    storedSortOrder=new OrderMaker();
+    int numAttrs=0;
+    string::size_type sz;
+    string val1="",val2="";
+    int i=0;
+    while(fscanf(metaFile,"%s",val1.c_str())!=-1){
+        // printf("val1:%s",val1.c_str());
+        sortAttr[i]=stoi(val1,&sz);
+        fscanf(metaFile,"%s",val2.c_str());
+        // printf("val2:%s",val2.c_str());
+        sortTypeAttr[i]=(Type)stoi(val2,&sz);
+        numAttrs++;
+        i++;
+    }
+    storedSortOrder->setAttributes(sortAttr,sortTypeAttr,numAttrs);
+    // storedSortOrder->Print();
+    fclose(metaFile);
 }
 
 

@@ -112,6 +112,7 @@ void* SortedFileHandler::bigq(void * arg){
 	// printf("Result after remove: %d\n", result);
 	bigqArgs->sortedOrder.Print(); 
 	BigQ bigq(*bigqArgs->inputPipe,*bigqArgs->outputPipe,bigqArgs->sortedOrder,bigqArgs->runlen);
+	return NULL;
 }
 
 void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
@@ -213,6 +214,7 @@ int SortedFileHandler::GetRecord(Page &currPage, off_t &pageNum ,char *f_path, R
 	else{
 		return 1;
 	}
+	return 0;
 }
 
 

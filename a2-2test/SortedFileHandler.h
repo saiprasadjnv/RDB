@@ -12,7 +12,7 @@ class SortedFileHandler{
         char currentState='r';
         int currentReadPage;
         struct consumerArgs{
-            Pipe *outputPipe;
+            Pipe **outputPipe;
             char* fPath;
         };
         struct bigQArgs{
@@ -21,8 +21,8 @@ class SortedFileHandler{
             OrderMaker sortedOrder;
             int runlen;
         };
-        Pipe *inputPipe;
-        Pipe *outputPipe;
+        Pipe* inputPipe;
+        Pipe* outputPipe;
         OrderMaker* sortOrder;
         int runlength;
         pthread_t consumerThread;
@@ -40,5 +40,8 @@ class SortedFileHandler{
     //  static void* consumer(void * args);
      static void* bigq(void *args);
      void mergeNewRecords(File &file,Pipe *outputPipe);
+     int AddRecord(Page &currPage, off_t &pageNum, char* f_path, Record &rec);
+     int GetRecord(Page &currPage, off_t &pageNum, char* f_path, Record &rec); 
+     void AddPage(Page &currPage, off_t &pageNum, char* f_path);
 };
 #endif

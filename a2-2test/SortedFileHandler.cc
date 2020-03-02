@@ -115,23 +115,26 @@ void* SortedFileHandler::bigq(void * arg){
 }
 
 void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
-	Record *temp1=new Record();
+	Record *temp1=new Record;
 	Record *temp2=new Record;
 	file.Close();
 	char newFile[100];
 	// printf("%s",f_path);
 	sprintf(newFile,"%s.tmp",f_path);
-	HeapFile *tmpFile = new HeapFile;
-	tmpFile->Create((const char*)newFile,NULL);
-	HeapFile *mainFile = new HeapFile();
-	long i=0;
-	Schema mySchema ("catalog", "lineitem");
-	mainFile->Open((const char*)f_path);
+	Page tempcurrPage;
+	Page mainCurrPage;
+	File commonFile; 
+	off_t tempPageNum=0;
+	off_t mainPageNum=0;
+	printf("Opening tmpFile\n");
+	commonFile.Open(0, newFile);
+	commonFile.Close(); 
+
 	if(outputPipe->Remove(temp1) == 0 ){
 		// printf("Setting temp1 to null\n");
 		temp1=nullptr;
 	}
-	if(mainFile->GetNext(*temp2) == 0){
+	if(GetRecord(mainCurrPage,mainPageNum,f_path,*temp2) == 0){
 		// printf("Setting temp2 to null\n");
 		temp2=nullptr;
 	}
@@ -139,35 +142,37 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 	while(temp1!=nullptr || temp2!=nullptr){
 		if(temp1!=nullptr && temp2!=nullptr){
 			if(cEngine.Compare(temp1,temp2,sortOrder)<=0){
-				tmpFile->Add(*temp1);
+				// tmpFile->Add(*temp1);
+				AddRecord(tempcurrPage,tempPageNum,newFile,*temp1);
 				delete temp1;
 				temp1=new Record();
 				if(!outputPipe->Remove(temp1)){
 					temp1=nullptr;
 				}
 			}else{
-				tmpFile->Add(*temp2);
+				// tmpFile->Add(*temp2);
+				AddRecord(tempcurrPage,tempPageNum,newFile,*temp2);
 				delete temp2;
 				temp2=new Record();
-				if(!mainFile->GetNext(*temp2)){
+				if(GetRecord(mainCurrPage,mainPageNum,f_path,*temp2) == 0){
 					temp2=nullptr;
 				}
 
 			}
 		}else if(temp1==nullptr){
 			//temp2
-				tmpFile->Add(*temp2);
+				// tmpFile->Add(*temp2);
+				AddRecord(tempcurrPage,tempPageNum,newFile,*temp2);
 				delete temp2;
 				temp2=new Record();
-				if(!mainFile->GetNext(*temp2)){
+				if(GetRecord( mainCurrPage,mainPageNum,f_path,*temp2) == 0){
 					temp2=nullptr;
 				}
 		}else if(temp2==nullptr){
 			//temp1
-				tmpFile->Add(*temp1);
+				// tmpFile->Add(*temp1);
+				AddRecord(tempcurrPage,tempPageNum,newFile,*temp1);
 				delete temp1;
-				// printf("i: %ld\n",i++);
-				// temp1->Print(&mySchema);
 				
 				temp1=new Record();
 				if(!outputPipe->Remove(temp1)){
@@ -179,7 +184,57 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 		
 	}
 	// outputPipe->ShutDown();
-	tmpFile->Close();
-	mainFile->Close();
+	AddPage(tempcurrPage, tempPageNum, newFile);
+	commonFile.Close();
 
+}
+
+
+int SortedFileHandler::GetRecord(Page &currPage, off_t &pageNum ,char *f_path, Record &rec){
+	if(currPage.GetFirst(&rec)==0){
+		File *file = new File(); 
+		file->Open(1, f_path); 
+		off_t fileLen = file->GetLength();
+		currPage.EmptyItOut(); 
+		if(pageNum +1 < fileLen -1){
+			++pageNum;
+			file->GetPage(&currPage, pageNum);
+			currPage.GetFirst(&rec);
+			file->Close();
+			delete file;
+			return 1; 
+		}
+		else{
+			file->Close();
+			delete file;
+			return 0; 
+		}
+	}
+	else{
+		return 1;
+	}
+}
+
+
+int SortedFileHandler::AddRecord(Page &currPage, off_t &pageNum ,char *f_path, Record &rec){
+	if(currPage.Append(&rec)==0){
+		File *file = new File();
+		file->Open(1,f_path);
+		file->AddPage(&currPage, pageNum); 
+		pageNum++; 
+		currPage.EmptyItOut();
+		currPage.Append(&rec);
+		file->Close(); 
+		delete file;
+	}
+	return 1; 
+}
+
+void SortedFileHandler::AddPage(Page &currPage, off_t &pageNum, char* f_path){
+	File *file = new File();
+	file->Open(1, f_path); 
+	file->AddPage(&currPage, pageNum); 
+	pageNum++;
+	file->Close();
+	delete file;
 }

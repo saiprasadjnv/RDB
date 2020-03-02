@@ -42,7 +42,7 @@ int SortedFile::Create (const char *f_path, void *startup) {
     sortInfo *sort_info=(sortInfo *)startup;
     sortFileHandler->f_path=(char *)f_path;
     sortFileHandler->sortOrder=sort_info->o;
-    sortFileHandler->runlength=sort_info->l;
+    sortFileHandler->runlength=(long)sort_info->l;
     // sortFileHandler->inputPipe=inputPipe;
     // sortFileHandler->outputPipe=outputPipe;
     // printf("Inside create");

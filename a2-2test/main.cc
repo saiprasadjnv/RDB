@@ -32,23 +32,24 @@ int main () {
 	OrderMaker o;
 	// // rel->get_sort_order (o);
 	int sortAttr[2]={0,1};
-	Type typeAttr[2]={Int,Double};
+	Type typeAttr[2]={Int,Int};
 	o.setAttributes(sortAttr,typeAttr,2);
 	struct {OrderMaker *o; int l;} startup = {&o, (long)1};
 	newDBFile->Create("bin/test.bin", sorted ,&startup);
 	// newDBfile.Create("bin/test.bin", heap, &startup);
-	// newDBFile->Load(*mySchema, "/mnt/d/UF/DBI/tpch-dbgen/lineitem.tbl");
+	newDBFile->Load(*mySchema, "/mnt/d/UF/DBI/tpch-dbgen/lineitem.tbl");
 	newDBFile->Close();
 	newDBFile->Open("bin/test.bin");
-	// Record temp;
-	// int cnt=0;
-	// while (newDBFile->GetNext(temp) && ++cnt) {
-	// 	temp.Print (mySchema);
-	// 	if (cnt % 10000) {
-	// 		cerr << ".";
-	// 	}
-	// }
-	// cout << "\n scanned " << cnt << " recs \n";
+	Record temp;
+	int cnt=0;
+	newDBFile->MoveFirst();
+	while (newDBFile->GetNext(temp) && ++cnt) {
+		temp.Print (mySchema);
+		// if (cnt % 10000) {
+		// 	cerr << ".";
+		// }
+	}
+	cout << "\n scanned " << cnt << " recs \n";
 	printf("Closing File now**************\n");
 	newDBFile->Close();  
 	delete mySchema;

@@ -21,7 +21,7 @@ private:
 	int currRecord;  
 	// HeapFileHandler *handler;
 	OrderMaker sortOrder;
-	int sortRunLength;
+	long sortRunLength;
 	struct sortInfo {OrderMaker *o; int l;};
 	// BigQ *bigQ;
 	Pipe *inputPipe;

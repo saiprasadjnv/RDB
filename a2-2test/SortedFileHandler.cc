@@ -37,26 +37,13 @@ int SortedFileHandler::writeHandler(File &file,Page &curPage,off_t &whichPage){
     if(currentState=='r'){
 		// printf("Inside writeHandler");
         currentReadPage=whichPage;
-		// delete inputPipe;
-		// delete outputPipe;
-		// printf("INpipe address in before create file: %ld\n", inputPipe);
-	 	// printf("outpipe address in before create file: %ld\n", outputPipe);
-		// delete inputPipe;
-		// delete outputPipe;
 		inputPipe=new Pipe(100);
 		outputPipe=new Pipe(100);
-		// printf("INpipe address in after create file: %ld\n", inputPipe);
-	 	// printf("outpipe address in after create file: %ld\n", outputPipe);
-		// consumerArgs consumerInfo={outputPipe,f_path};
-		// pthread_create(&consumerThread,NULL,SortedFileHandler::consumer,(void *)&consumerInfo);
 		bigQArgs *bigqArgs= new bigQArgs();
 		bigqArgs->inputPipe=inputPipe;
 		bigqArgs->outputPipe=outputPipe;
 		bigqArgs->runlen=runlength;
 		bigqArgs->sortedOrder= *sortOrder; 
-		// printf("*******inside writehandler*****\n");
-		//  printf("INpipe address in bigqArgs file: %ld\n", bigqArgs->inputPipe);
-	 	// printf("outpipe address in bigqArgs file: %ld\n", bigqArgs->outputPipe);
 		pthread_create(&bigQThread,NULL,this->bigq,(void*)bigqArgs);
 		currentState='w';
 		// pthread_join(bigQThread,NULL); 
@@ -103,14 +90,7 @@ int SortedFileHandler::init(Page &curPage,off_t &whichPage,int &currentRecord){
 }
 
 void* SortedFileHandler::bigq(void * arg){
-	bigQArgs *bigqArgs=(bigQArgs*)arg;
-	// printf("Inside bigq runlen: %ld \n", bigqArgs->runlen);
-	//  printf("INpipe address in bigQthread file: %ld\n", bigqArgs->inputPipe);
-	//  printf("outpipe address in bigQthread file: %ld\n", bigqArgs->outputPipe);
-	//Record temp1; 
-	//int result = bigqArgs->inputPipe->Remove(&temp1); 
-	// printf("Result after remove: %d\n", result);
-	bigqArgs->sortedOrder.Print(); 
+	bigQArgs *bigqArgs=(bigQArgs*)arg; 
 	BigQ bigq(*bigqArgs->inputPipe,*bigqArgs->outputPipe,bigqArgs->sortedOrder,bigqArgs->runlen);
 	return NULL;
 }
@@ -122,20 +102,21 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 	char newFile[100];
 	// printf("%s",f_path);
 	sprintf(newFile,"%s.tmp",f_path);
-	Page tempcurrPage;
-	Page mainCurrPage;
-	File commonFile; 
+	Page *tempcurrPage=new Page;
+	Page *mainCurrPage=new Page;
+	File *commonFile=new File; 
 	off_t tempPageNum=0;
 	off_t mainPageNum=0;
-	printf("Opening tmpFile\n");
-	commonFile.Open(0, newFile);
-	commonFile.Close(); 
+	// printf("Opening tmpFile\n");
+	commonFile->Open(0, newFile);
+	commonFile->Close(); 
+	delete commonFile;
 
 	if(outputPipe->Remove(temp1) == 0 ){
 		// printf("Setting temp1 to null\n");
 		temp1=nullptr;
 	}
-	if(GetRecord(mainCurrPage,mainPageNum,f_path,*temp2) == 0){
+	if(GetRecord(*mainCurrPage,mainPageNum,f_path,*temp2) == 0){
 		// printf("Setting temp2 to null\n");
 		temp2=nullptr;
 	}
@@ -144,7 +125,7 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 		if(temp1!=nullptr && temp2!=nullptr){
 			if(cEngine.Compare(temp1,temp2,sortOrder)<=0){
 				// tmpFile->Add(*temp1);
-				AddRecord(tempcurrPage,tempPageNum,newFile,*temp1);
+				AddRecord(*tempcurrPage,tempPageNum,newFile,*temp1);
 				delete temp1;
 				temp1=new Record();
 				if(!outputPipe->Remove(temp1)){
@@ -152,10 +133,10 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 				}
 			}else{
 				// tmpFile->Add(*temp2);
-				AddRecord(tempcurrPage,tempPageNum,newFile,*temp2);
+				AddRecord(*tempcurrPage,tempPageNum,newFile,*temp2);
 				delete temp2;
 				temp2=new Record();
-				if(GetRecord(mainCurrPage,mainPageNum,f_path,*temp2) == 0){
+				if(GetRecord(*mainCurrPage,mainPageNum,f_path,*temp2) == 0){
 					temp2=nullptr;
 				}
 
@@ -163,16 +144,16 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 		}else if(temp1==nullptr){
 			//temp2
 				// tmpFile->Add(*temp2);
-				AddRecord(tempcurrPage,tempPageNum,newFile,*temp2);
+				AddRecord(*tempcurrPage,tempPageNum,newFile,*temp2);
 				delete temp2;
 				temp2=new Record();
-				if(GetRecord( mainCurrPage,mainPageNum,f_path,*temp2) == 0){
+				if(GetRecord( *mainCurrPage,mainPageNum,f_path,*temp2) == 0){
 					temp2=nullptr;
 				}
 		}else if(temp2==nullptr){
 			//temp1
 				// tmpFile->Add(*temp1);
-				AddRecord(tempcurrPage,tempPageNum,newFile,*temp1);
+				AddRecord(*tempcurrPage,tempPageNum,newFile,*temp1);
 				delete temp1;
 				
 				temp1=new Record();
@@ -185,8 +166,18 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 		
 	}
 	// outputPipe->ShutDown();
-	AddPage(tempcurrPage, tempPageNum, newFile);
-	commonFile.Close();
+	AddPage(*tempcurrPage, tempPageNum, newFile);
+	// commonFile.Close();
+	delete tempcurrPage;
+	delete mainCurrPage;
+	if(temp1!=nullptr){
+		delete temp1;
+	}
+	if(temp2!=nullptr){
+	delete temp2;
+	}
+	remove(f_path);
+	rename(newFile,f_path);
 
 }
 

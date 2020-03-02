@@ -14,7 +14,7 @@ private:
 	typedef void * (*THREADFUNCPTR)(void *); 
 public:
 	LoserTree *myLoserTree; 
-	BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen);
+	BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, long runlen);
 	~BigQ ();
 };
 

@@ -1,6 +1,6 @@
 #include "BigQ.h"
 
-BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
+BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, long runlen) {
 	// printf("Bigq constructor:\n");
 	// Record temp1; 
 	// int result = in.Remove(&temp1); 

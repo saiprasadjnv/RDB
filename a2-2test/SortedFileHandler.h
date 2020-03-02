@@ -11,21 +11,21 @@ class SortedFileHandler{
     private:
         char currentState='r';
         int currentReadPage;
-        struct consumerArgs{
-            Pipe **outputPipe;
-            char* fPath;
-        };
+        // struct consumerArgs{
+        //     Pipe **outputPipe;
+        //     char* fPath;
+        // };
         struct bigQArgs{
             Pipe *inputPipe;
             Pipe *outputPipe;
             OrderMaker sortedOrder;
-            int runlen;
+            long runlen;
         };
         Pipe* inputPipe;
         Pipe* outputPipe;
         OrderMaker* sortOrder;
-        int runlength;
-        pthread_t consumerThread;
+        long runlength;
+        // pthread_t consumerThread;
         pthread_t bigQThread;
         char* f_path;
 

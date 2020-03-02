@@ -14,13 +14,14 @@ class HeapFile: public GenericDBFile{
 	friend class HeapFileHandler;
 
 private:
-	File myHeapFile; 
+	File *myHeapFile; 
 	Page currPage;
 	off_t whichPage; 
 	int currRecord;  
 	HeapFileHandler *handler;
 public:
 	 HeapFile (); 
+	 ~HeapFile();
 
 	 int Create (const char *fpath, void *startup);
 	 int Open (const char *fpath);

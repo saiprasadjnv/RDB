@@ -29,19 +29,21 @@ SortedFile::SortedFile () {
     storedSortOrder=nullptr;
     queryOrderMaker=nullptr;
     isQueryOrderMakerConstructReqd=true;
+    mySortedFile=new File();
     // printf("after");
     // handler=new HeapFileHandler();
 }
 SortedFile::~SortedFile(){
     delete sortFileHandler;
+    delete mySortedFile;
 }
 /* 
  * Method that creates a new file based on the ftype provided. 
  * Before creating the new file it closes any existing file stream.
  */
 int SortedFile::Create (const char *f_path, void *startup) {  
-    mySortedFile.Close();
-    mySortedFile.Open(0,(char *)f_path);
+    mySortedFile->Close();
+    mySortedFile->Open(0,(char *)f_path);
     sortInfo *sort_info=(sortInfo *)startup;
     sortFileHandler->f_path=(char *)f_path;
     sortFileHandler->sortOrder=sort_info->o;
@@ -82,11 +84,12 @@ void SortedFile::Load (Schema &f_schema, const char *loadpath) {
 * Method to open the given filepath(f_path) in read/write mode.
 */
 int SortedFile::Open (const char *f_path) {
-    mySortedFile.Close();
+    mySortedFile->Close();
     // printf("In sortedfile open\n");
-    mySortedFile.Open(1, (char *) f_path);
+    mySortedFile->Open(1, (char *) f_path);
     setup(f_path,NULL);
     // handler->init(currPage,whichPage,currRecord);
+    sortFileHandler->init(currPage,whichPage,currRecord);
     return 1;
 }
 
@@ -95,7 +98,7 @@ int SortedFile::Open (const char *f_path) {
 */
 void SortedFile::MoveFirst () {
     // handler->readHandler(mySortedFile,currPage,whichPage,0);
-    mySortedFile.GetPage(&currPage,0);
+    mySortedFile->GetPage(&currPage,0);
     whichPage=0;
     currRecord=0;
 }
@@ -106,8 +109,8 @@ int SortedFile::Close () {
     // handler->tearDown(mySortedFile,currPage,whichPage);
     // sortFileHandler->readHandler(mySortedFile,currPage,whichPage,0,)
     // printf("In sortedfile close %ld\n",&mySortedFile);
-    sortFileHandler->tearDown(mySortedFile,currPage,whichPage);
-    mySortedFile.Close();
+    sortFileHandler->tearDown(*mySortedFile,currPage,whichPage);
+    mySortedFile->Close();
     return 1;
 }
 
@@ -120,7 +123,7 @@ void SortedFile::Add (Record &rec) {
     // Schema mySchema("catalog", "customer");
     // rec.Print(&mySchema); 
     // printf("In add sortedfile\n"); 
-    sortFileHandler->writeHandler(mySortedFile,currPage,whichPage);
+    sortFileHandler->writeHandler(*mySortedFile,currPage,whichPage);
     // printf("In add sortedfile after writehandler call\n"); 
     // printf("INpipe address in sorted file: %ld\n", inputPipe);
     // printf("outpipe address in sorted file: %ld\n", outputPipe);
@@ -132,13 +135,13 @@ void SortedFile::Add (Record &rec) {
 */
 int SortedFile::GetNext (Record &fetchme) { 
     // handler->readHandler(mySortedFile,currPage,whichPage,currRecord);
-    sortFileHandler->readHandler(&mySortedFile,currPage,whichPage,currRecord);
-    off_t len=mySortedFile.GetLength();
+    sortFileHandler->readHandler(mySortedFile,currPage,whichPage,currRecord);
+    off_t len=mySortedFile->GetLength();
     if(currPage.GetFirst(&fetchme)==0){
         currPage.EmptyItOut();
         if(whichPage+1<len-1){ 
             ++whichPage;
-            mySortedFile.GetPage(&currPage,whichPage);
+            mySortedFile->GetPage(&currPage,whichPage);
             currPage.GetFirst(&fetchme);
             currRecord=1;
             return 1;
@@ -157,7 +160,7 @@ int SortedFile::GetNext (Record &fetchme) {
 int SortedFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
     // handler->readHandler(mySortedFile,currPage,whichPage,currRecord);
     // printf("In sortedfile %ld\n",&mySortedFile);
-    sortFileHandler->readHandler(&mySortedFile,currPage,whichPage,currRecord);
+    sortFileHandler->readHandler(mySortedFile,currPage,whichPage,currRecord);
     ConstructQueryOrderMaker(cnf);
     ComparisonEngine comp;
     // if(queryOrderMaker==nullptr){
@@ -227,14 +230,16 @@ void SortedFile::setup(const char *fpath,void *startup){
     storedSortOrder=new OrderMaker();
     int numAttrs=0;
     string::size_type sz;
-    string val1="",val2="";
+    int val1=0,val2=0;
     int i=0;
-    while(fscanf(metaFile,"%s",val1.c_str())!=-1){
+    while(fscanf(metaFile,"%d",&val1)!=-1){
         // printf("val1:%s",val1.c_str());
-        sortAttr[i]=stoi(val1,&sz);
-        fscanf(metaFile,"%s",val2.c_str());
+        // sortAttr[i]=stoi(val1,&sz);
+        sortAttr[i]=val1;
+        fscanf(metaFile,"%d",&val2);
         // printf("val2:%s",val2.c_str());
-        sortTypeAttr[i]=(Type)stoi(val2,&sz);
+        // sortTypeAttr[i]=(Type)stoi(val2,&sz);
+        sortTypeAttr[i]=(Type)val2;
         numAttrs++;
         i++;
     }
@@ -244,7 +249,7 @@ void SortedFile::setup(const char *fpath,void *startup){
     sortFileHandler->f_path=(char*)fpath;
     // printf("filepath after read:%s\n",sortFileHandler->f_path);
     sortFileHandler->sortOrder=storedSortOrder;
-    // sortFileHandler->sortOrder->Print();
+    sortFileHandler->sortOrder->Print();
     sortRunLength=runLength;
     sortFileHandler->runlength=sortRunLength;
     // printf("runlength after read:%ld\n",sortFileHandler->runlength);
@@ -268,7 +273,7 @@ int SortedFile::ConstructQueryOrderMaker(CNF &cnf){
         // sort(CNFAttr,CNFAttr+CNFNumAttr);
         for(i=0;i<sortOrderNumAttr;i++){
             for(j=0;j<CNFNumAttr;j++){
-                if(sortOrderAttr[i]==CNFAttr[j]){
+                if(sortOrderAttr[i]==CNFAttr[j] && CNFOperators[j]==Equals){
                     queryOrderAttr[k]=sortOrderAttr[i];
                     queryOrderTypeAttr[k]=sortOrderTypeAttr[i];
                     k++;

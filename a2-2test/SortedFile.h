@@ -15,7 +15,7 @@
 class SortedFile: public GenericDBFile{ 
 
 private:
-	File mySortedFile; 
+	File *mySortedFile; 
 	Page currPage;
 	off_t whichPage; 
 	int currRecord;  

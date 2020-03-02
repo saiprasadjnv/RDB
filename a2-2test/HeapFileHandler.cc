@@ -10,10 +10,10 @@ HeapFileHandler::HeapFileHandler(){
 /*
 * Read Handler that preprocess the state of the DBFile from write to read mode.
 */
-int HeapFileHandler::readHandler(File &file,Page &curPage,off_t &whichPage,int lastReadRecord){
+int HeapFileHandler::readHandler(File *file,Page &curPage,off_t &whichPage,int lastReadRecord){
     if(currentState=='w'){
-        file.AddPage(&curPage,whichPage);
-        file.GetPage(&curPage,currentReadPage);
+        file->AddPage(&curPage,whichPage);
+        file->GetPage(&curPage,currentReadPage);
         popRecordsFromCurPage(curPage,lastReadRecord);
         whichPage=currentReadPage;
         currentState='r';
@@ -42,7 +42,7 @@ int HeapFileHandler::writeHandler(File &file,Page &curPage,off_t &whichPage){
 * Method to perform any pre shutdown tasks.
 */
 int HeapFileHandler::tearDown(File &file,Page &curPage,off_t &whichPage){
-    int status=readHandler(file,curPage,whichPage,0);
+    int status=readHandler(&file,curPage,whichPage,0);
     return status;
 
 }

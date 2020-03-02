@@ -12,6 +12,7 @@ HeapFileHandler::HeapFileHandler(){
 */
 int HeapFileHandler::readHandler(File &file,Page &curPage,off_t &whichPage,int lastReadRecord){
     if(currentState=='w'){
+        printf("Inside readHandler-HeapFileHandler\n");
         file.AddPage(&curPage,whichPage);
         file.GetPage(&curPage,currentReadPage);
         popRecordsFromCurPage(curPage,lastReadRecord);
@@ -42,8 +43,14 @@ int HeapFileHandler::writeHandler(File &file,Page &curPage,off_t &whichPage){
 * Method to perform any pre shutdown tasks.
 */
 int HeapFileHandler::tearDown(File &file,Page &curPage,off_t &whichPage){
-    int status=readHandler(file,curPage,whichPage,0);
-    return status;
+    // int status=readHandler(file,curPage,whichPage,0);
+    if(currentState=='w'){
+        printf("Inside tearDown-HeapFileHandler\n");
+        file.AddPage(&curPage,whichPage);
+        currentState='r';
+        return 1;
+    }
+    return 1;
 
 }
 

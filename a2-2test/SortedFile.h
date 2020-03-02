@@ -15,7 +15,7 @@
 class SortedFile: public GenericDBFile{ 
 
 private:
-	File myHeapFile; 
+	File mySortedFile; 
 	Page currPage;
 	off_t whichPage; 
 	int currRecord;  
@@ -23,12 +23,14 @@ private:
 	OrderMaker sortOrder;
 	int sortRunLength;
 	struct sortInfo {OrderMaker *o; int l;};
-	BigQ *bigQ;
+	// BigQ *bigQ;
 	Pipe *inputPipe;
 	Pipe *outputPipe;
 	SortedFileHandler *sortFileHandler;
+	OrderMaker *storedSortOrder;
 public:
-	 SortedFile (); 
+	 SortedFile ();
+	 ~SortedFile(); 
 
 	 int Create (const char *fpath, void *startup);
 	 int Open (const char *fpath);

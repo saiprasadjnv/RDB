@@ -26,6 +26,7 @@ HeapFile::HeapFile () {
  * Before creating the new file it closes any existing file stream.
  */
 int HeapFile::Create (const char *f_path, void *startup) {  
+    printf("In Creating %s- %ld\n",f_path,this);
     myHeapFile.Close();
     myHeapFile.Open(0,(char *)f_path);
     return 1;
@@ -48,6 +49,7 @@ void HeapFile::Load (Schema &f_schema, const char *loadpath) {
 * Method to open the given filepath(f_path) in read/write mode.
 */
 int HeapFile::Open (const char *f_path) {
+    printf("In Opening %s - %ld\n",f_path,this);
     myHeapFile.Close();
     myHeapFile.Open(1, (char *) f_path);
     handler->init(currPage,whichPage,currRecord);
@@ -79,6 +81,7 @@ int HeapFile::Close () {
 void HeapFile::Add (Record &rec) {
      handler->writeHandler(myHeapFile,currPage,whichPage);
      if(currPage.Append(&rec)==0){
+            printf("In Add %ld\n",this);
             myHeapFile.AddPage(&currPage, whichPage);
             whichPage++;
             currPage.EmptyItOut();

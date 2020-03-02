@@ -1,8 +1,8 @@
 #include "BigQ.h"
 
 BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
-	printf("Bigq constructor:\n");
-	Record temp1; 
+	// printf("Bigq constructor:\n");
+	// Record temp1; 
 	// int result = in.Remove(&temp1); 
 // m
 // 	printf("INpipe address in BIgq file: %ld\n", &in);
@@ -10,7 +10,7 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 	myLoserTree = new  LoserTree(in,out,runlen, sortorder); 
 	pthread_t sortingThread; 
  
-	Schema mySchema ("catalog", "lineitem"); 
+	// Schema mySchema ("catalog", "lineitem"); 
 	long i =0; 
 	// in.Remove(&temp1);
 	// temp1.Print(&mySchema);
@@ -24,6 +24,7 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 	pthread_join(sortingThread, NULL); 
 	remove("tempFile.bin");
 	out.ShutDown ();
+	delete myLoserTree;
 }
 
 BigQ::~BigQ () {

@@ -23,7 +23,7 @@ int main () {
        // FILE *tableFile = fopen ("/Users/macuser/Documents/Study_1/Study/DBI/Projects/Project1/tpch-dbgen/lineitem.tbl", "r");
 
     //Record temp;
-    Schema mySchema ("catalog", "lineitem");
+    Schema *mySchema=new Schema("catalog", "lineitem");
 	// DBFile newDBfile;
 	DBFile *newDBFile=new DBFile(); 
 	//FILE *tableFile = fopen ("/Users/macuser/Documents/Study_1/Study/DBI/Projects/Project1/tpch-dbgen/lineitem.tbl", "r");
@@ -36,10 +36,12 @@ int main () {
 	o.setAttributes(sortAttr,typeAttr,1);
 	struct {OrderMaker *o; int l;} startup = {&o, (long)1};
 	newDBFile->Create("bin/test.bin", sorted ,&startup);
-	// newDBfile.Create("bin/test.bin", sorted, &startup);
-	newDBFile->Load(mySchema, "/Users/macuser/Documents/Study_1/Study/DBI/Projects/Project1/tpch-dbgen/lineitem.tbl");
+	// newDBfile.Create("bin/test.bin", heap, &startup);
+	newDBFile->Load(*mySchema, "/mnt/d/UF/DBI/tpch-dbgen/lineitem.tbl");
 	printf("Closing File now**************\n");
 	newDBFile->Close();  
+	delete mySchema;
+	delete newDBFile;
 	//newDBfile.Open("/mnt/d/UF/DBI_project1/P1/bin/lineitem.bin"); 
 	//newDBfile.GetNext(tmp);
 

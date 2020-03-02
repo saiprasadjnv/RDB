@@ -39,15 +39,19 @@ LoserTree::LoserTree(Pipe &input, Pipe &output, long runlength, OrderMaker &sort
 }
 
 LoserTree::~LoserTree(){
-    delete records;
-    delete myTree;
-    delete pagesPerRun;  
+    // delete[] records;
+    // delete[] myTree;
+    delete[] pagesPerRun; 
+    delete mySchema; 
     tempFile->Close();
+    delete tempPage;
+    delete tempFile;
+    delete[] pageBuffers;
 }
 
 
 void *LoserTree::sort(void * args){
-    printf("IN sort");
+    // printf("IN sort");
     LoserTree *thisNode = (LoserTree *)args; 
     thisNode->pass1(); 
     thisNode-> pass2(); 
@@ -67,6 +71,7 @@ void LoserTree::initialize(){
 }   
 
 void LoserTree::pass1(){
+    // printf("Opening tempFile\n");
     tempFile->Open(0,"tempFile.bin");
     setupPass1(); 
     initialize();
@@ -180,6 +185,7 @@ void LoserTree::pass2(){
 long LoserTree::play(long j, LoserTree::LoserNode &player2){
   // printf(" **%d** ", j);
     LoserNode *winner = new LoserNode; 
+    long winnerIndex=0;
     long res;
     if (j == 0)
     {
@@ -200,13 +206,17 @@ long LoserTree::play(long j, LoserTree::LoserNode &player2){
             winner->recordIndex = player2.recordIndex; 
             winner->runNumber = player2.runNumber; 
         }
-        return TREENODEINDEX(winner->recordIndex) ;         
+        winnerIndex=TREENODEINDEX(winner->recordIndex);
+        delete winner;
+        // return TREENODEINDEX(winner->recordIndex) ; 
+        return winnerIndex;        
     }
     if (myTree[j].recordIndex == -1)
     {
         winner->recordIndex = player2.recordIndex;
         winner->runNumber = player2.runNumber; 
         myTree[j] = player2; 
+        delete winner;
         return TREENODEINDEX(player2.recordIndex); 
     }
     else{
@@ -224,7 +234,10 @@ long LoserTree::play(long j, LoserTree::LoserNode &player2){
             winner->runNumber = myTree[res].runNumber;  
         }
     }
-     return TREENODEINDEX(winner->recordIndex); 
+        winnerIndex=TREENODEINDEX(winner->recordIndex);
+        delete winner;
+        // return TREENODEINDEX(winner->recordIndex) ; 
+        return winnerIndex;
 }
 
 
@@ -327,6 +340,7 @@ void LoserTree::setupPass1(){
 void LoserTree::setupPass2(){
     int numOfruns = 0; 
     int i=0; 
+    // printf("Opening tempFile pass2\n");
     tempFile->Open(1,"tempFile.bin");
     while(pagesPerRun[i]!=0){
         if(i>0)
@@ -370,6 +384,6 @@ void LoserTree::cleanup(){
     tempPage->EmptyItOut(); 
     treeSize=0; 
     currRunNumber=0;
-    delete []records;
-    delete myTree; 
+    delete[] records;
+    delete[] myTree; 
 }

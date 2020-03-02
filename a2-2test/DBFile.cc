@@ -61,6 +61,7 @@ int DBFile::Open (const char *f_path) {
 		myFile=new SortedFile();
 
 	}
+	fclose(metaFile);
 	myFile->Open(f_path);
 	return 1;
 }
@@ -70,7 +71,8 @@ void DBFile::MoveFirst () {
 }
 
 int DBFile::Close () {
-    myFile->Close(); 
+    myFile->Close();
+	delete myFile; 
 	return 1;
 }
 

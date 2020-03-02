@@ -31,7 +31,7 @@ class SortedFileHandler{
 
     public:
      SortedFileHandler();
-     int readHandler(File &file,Page &curPage,off_t &whichPage,int lastReadRecord);
+     int readHandler(File *file,Page &curPage,off_t &whichPage,int lastReadRecord);
      int writeHandler(File &file,Page &curPage,off_t &whichPage);
      int tearDown(File &file,Page &curPage,off_t &whichPage);
      char getCurrentState();

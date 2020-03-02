@@ -624,13 +624,13 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 
 	// close the record file
 	fclose (outRecFile);
-
+	literal.Print(&outSchema);
 	remove("sdafdsfFFDSDA");
 	remove("hkljdfgkSDFSDF");
 }
 
 
-void CNF::getAttributes(int* &putAttsHere, CompOperator* &putOpsHere, int &totalCNFs){
+void CNF::getSingleExpressionAttributes(int* putAttsHere, CompOperator* putOpsHere, int &totalCNFs){
 	 int j=0; 
 	 for(int i=0; i<numAnds; i++){
 		 if (orLens[i]==1)

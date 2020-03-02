@@ -105,7 +105,7 @@ void test3 () {
 	int *putAttsHere = new int[MAX_ANDS]; 
 	CompOperator *putOpsHere = new CompOperator[MAX_ANDS]; 
 	int totalCNFsput; 
-	cnf.getAttributes(putAttsHere, putOpsHere, totalCNFsput); 
+	cnf.getSingleExpressionAttributes(putAttsHere, putOpsHere, totalCNFsput); 
 	cout << " Total Attributes Placed: " << totalCNFsput << "\n"; 
 	for(int i=0; i< totalCNFsput; i++){
 		cout << "Attribute "<< putAttsHere[i] << " Operation " << putOpsHere[i] << "\n";

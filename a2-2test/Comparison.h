@@ -104,7 +104,7 @@ public:
 	//This function gives the CNF instances which have only one attribute being compared with
 	// a literal. The attributes are put in putAttsHere, 
 	// The corresponding operations are put in putOpsHere and the total number of CNFs placed in totalCNFs
-	void getAttributes(int* &putAttsHere, CompOperator* &putOpsHere, int &totalCNFs); 
+	void getSingleExpressionAttributes(int* putAttsHere, CompOperator* putOpsHere, int &totalCNFs); 
 
 };
 

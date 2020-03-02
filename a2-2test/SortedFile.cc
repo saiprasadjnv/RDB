@@ -15,6 +15,7 @@
 #include <iostream>
 #include <stdio.h>
 #include "string.h"
+// #include "algorithm"
 using namespace std;
 
 SortedFile::SortedFile () {
@@ -26,6 +27,8 @@ SortedFile::SortedFile () {
     // printf("before");
     sortFileHandler=new SortedFileHandler();
     storedSortOrder=nullptr;
+    queryOrderMaker=nullptr;
+    isQueryOrderMakerConstructReqd=true;
     // printf("after");
     // handler=new HeapFileHandler();
 }
@@ -101,6 +104,7 @@ void SortedFile::MoveFirst () {
 int SortedFile::Close () {
     // handler->tearDown(mySortedFile,currPage,whichPage);
     // sortFileHandler->readHandler(mySortedFile,currPage,whichPage,0,)
+    // printf("In sortedfile close %ld\n",&mySortedFile);
     sortFileHandler->tearDown(mySortedFile,currPage,whichPage);
     mySortedFile.Close();
     return 1;
@@ -125,7 +129,7 @@ void SortedFile::Add (Record &rec) {
 */
 int SortedFile::GetNext (Record &fetchme) { 
     // handler->readHandler(mySortedFile,currPage,whichPage,currRecord);
-    sortFileHandler->readHandler(mySortedFile,currPage,whichPage,currRecord);
+    sortFileHandler->readHandler(&mySortedFile,currPage,whichPage,currRecord);
     off_t len=mySortedFile.GetLength();
     if(currPage.GetFirst(&fetchme)==0){
         currPage.EmptyItOut();
@@ -149,20 +153,38 @@ int SortedFile::GetNext (Record &fetchme) {
 */
 int SortedFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
     // handler->readHandler(mySortedFile,currPage,whichPage,currRecord);
-    Record temp; 
+    // printf("In sortedfile %ld\n",&mySortedFile);
+    sortFileHandler->readHandler(&mySortedFile,currPage,whichPage,currRecord);
+    ConstructQueryOrderMaker(cnf);
     ComparisonEngine comp;
-    int res;
-    int count=0;
-    read_next_record:
-        res = GetNext(temp);
-        count++; 
-        if (res==0)
-            return 0; 
-        if(!(comp.Compare(&temp, &literal, &cnf))){
-            goto read_next_record;
-        }
-    fetchme.Consume(&temp);
-    return 1; 
+    // if(queryOrderMaker==nullptr){
+        //Linear Search
+        Record temp; 
+        int res;
+        int count=0;
+        read_next_record:
+            res = GetNext(temp);
+            count++; 
+            if (res==0)
+                return 0; 
+            if(!(comp.Compare(&temp, &literal, &cnf))){
+                goto read_next_record;
+            }
+        fetchme.Consume(&temp);
+        return 1;
+
+    // }else{
+    //     //Binary Search
+    //     Record temp;
+    //     Schema schema("catalog","lineitem");
+    //     GetNext(temp);
+    //     temp.Print(&schema);
+    //     // literal.Print(&schema);
+    //     printf("%d",comp.Compare(&temp,&literal,queryOrderMaker));
+    //     return 0;
+
+    // }
+    // return 0; 
 }
 
 void SortedFile::AddMetadata(const char *fpath,void *startup){
@@ -213,6 +235,51 @@ void SortedFile::setup(const char *fpath,void *startup){
     storedSortOrder->setAttributes(sortAttr,sortTypeAttr,numAttrs);
     // storedSortOrder->Print();
     fclose(metaFile);
+}
+
+int SortedFile::ConstructQueryOrderMaker(CNF &cnf){
+    if(isQueryOrderMakerConstructReqd){
+        int sortOrderAttr[MAX_ANDS];
+        Type sortOrderTypeAttr[MAX_ANDS];
+        int sortOrderNumAttr=0;
+        storedSortOrder->getAttributes(sortOrderAttr,sortOrderTypeAttr,sortOrderNumAttr);
+        int CNFAttr[MAX_ANDS];
+        CompOperator CNFOperators[MAX_ANDS];
+        int CNFNumAttr=0;
+        cnf.getSingleExpressionAttributes(CNFAttr,CNFOperators,CNFNumAttr);
+        int queryOrderAttr[MAX_ANDS];
+        Type queryOrderTypeAttr[MAX_ANDS];
+        int queryOrderNumAttr=0;
+        int i=0,j=0,k=0;
+        // sort(sortOrderAttr,sortOrderAttr+sortOrderNumAttr);
+        // sort(CNFAttr,CNFAttr+CNFNumAttr);
+        for(i=0;i<sortOrderNumAttr;i++){
+            for(j=0;j<CNFNumAttr;j++){
+                if(sortOrderAttr[i]==CNFAttr[j]){
+                    queryOrderAttr[k]=sortOrderAttr[i];
+                    queryOrderTypeAttr[k]=sortOrderTypeAttr[i];
+                    k++;
+                    queryOrderNumAttr++;
+                    break;
+                }
+            }
+            if(j==CNFNumAttr){
+                queryOrderNumAttr=0;
+                break;
+            }
+        }
+        if(queryOrderNumAttr!=0){
+            queryOrderMaker=new OrderMaker();
+            queryOrderMaker->setAttributes(queryOrderAttr,queryOrderTypeAttr,queryOrderNumAttr);
+            isQueryOrderMakerConstructReqd=false;
+            queryOrderMaker->Print();
+            return 1;
+        }
+        isQueryOrderMakerConstructReqd=false;
+        return 0;
+    }
+    
+    return 0;
 }
 
 

@@ -28,6 +28,8 @@ private:
 	Pipe *outputPipe;
 	SortedFileHandler *sortFileHandler;
 	OrderMaker *storedSortOrder;
+	OrderMaker *queryOrderMaker;
+	bool isQueryOrderMakerConstructReqd;
 public:
 	 SortedFile ();
 	 ~SortedFile(); 
@@ -44,6 +46,7 @@ public:
 	 int GetNext (Record &fetchme, CNF &cnf, Record &literal);
 	 void AddMetadata(const char *fpath,void *startup);
 	 void setup(const char *fpath,void *startup);
+	 int ConstructQueryOrderMaker(CNF &cnf);
 
 };
 #endif

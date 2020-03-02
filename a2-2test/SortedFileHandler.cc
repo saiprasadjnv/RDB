@@ -14,16 +14,19 @@ SortedFileHandler::SortedFileHandler(){
 /*
 * Read Handler that preprocess the state of the DBFile from write to read mode.
 */
-int SortedFileHandler::readHandler(File &file,Page &curPage,off_t &whichPage,int lastReadRecord){
+int SortedFileHandler::readHandler(File *file,Page &curPage,off_t &whichPage,int lastReadRecord){
     if(currentState=='w'){
 		inputPipe->ShutDown();	
-		mergeNewRecords(file,outputPipe);
+		// printf("In readhandler %ld\n",file);
+		mergeNewRecords(*file,outputPipe);
 		// pthread_join(bigQThread,NULL);
 
         // file.AddPage(&curPage,whichPage);
         // file.GetPage(&curPage,currentReadPage);
         // popRecordsFromCurPage(curPage,lastReadRecord);
         // whichPage=currentReadPage;
+		// file.Close();
+		file->Open(1,f_path);
         currentState='r';
         return 1;
     }
@@ -56,7 +59,7 @@ int SortedFileHandler::writeHandler(File &file,Page &curPage,off_t &whichPage){
 * Method to perform any pre shutdown tasks.
 */
 int SortedFileHandler::tearDown(File &file,Page &curPage,off_t &whichPage){
-    int status=readHandler(file,curPage,whichPage,0);
+    int status=readHandler(&file,curPage,whichPage,0);
     return status;
 
 }
@@ -98,7 +101,9 @@ void* SortedFileHandler::bigq(void * arg){
 void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 	Record *temp1=new Record;
 	Record *temp2=new Record;
+	// printf("In sortedfilehandler %ld\n",&file);
 	file.Close();
+	// perror("After file close mergenewrecords\n");
 	char newFile[100];
 	// printf("%s",f_path);
 	sprintf(newFile,"%s.tmp",f_path);
@@ -166,7 +171,9 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 		
 	}
 	// outputPipe->ShutDown();
+	// perror("error before addpage\n");
 	AddPage(*tempcurrPage, tempPageNum, newFile);
+	// perror("error after addpage\n");
 	// commonFile.Close();
 	delete tempcurrPage;
 	delete mainCurrPage;
@@ -174,9 +181,16 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 		delete temp1;
 	}
 	if(temp2!=nullptr){
-	delete temp2;
+		delete temp2;
 	}
-	remove(f_path);
+	// perror("error before removing\n");
+	// printf("file getlength before removal :%ld\n",file.GetLength());
+	// Page temp3;
+	// file.GetPage(&temp3,0);
+	// file.AddPage(&temp3,0);
+	// printf("file getlength after add page mergenewrec :%ld\n",file.GetLength());
+	remove((const char*)f_path);
+	// perror("error removing\n");
 	rename(newFile,f_path);
 
 }
@@ -191,6 +205,7 @@ int SortedFileHandler::GetRecord(Page &currPage, off_t &pageNum ,char *f_path, R
 		if(pageNum +1 < fileLen -1){
 			++pageNum;
 			file->GetPage(&currPage, pageNum);
+			// perror("getrecord getpage\n");
 			currPage.GetFirst(&rec);
 			file->Close();
 			delete file;

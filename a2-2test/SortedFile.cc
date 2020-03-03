@@ -220,7 +220,6 @@ void SortedFile::setup(const char *fpath,void *startup){
     fclose(metaFile);
     sortFileHandler->f_path=(char*)fpath;
     sortFileHandler->sortOrder=storedSortOrder;
-    sortFileHandler->sortOrder->Print();
     sortRunLength=runLength;
     sortFileHandler->runlength=sortRunLength;
 }
@@ -258,7 +257,6 @@ int SortedFile::ConstructQueryOrderMaker(CNF &cnf){
             queryOrderMaker=new OrderMaker();
             queryOrderMaker->setAttributes(queryOrderAttr,queryOrderTypeAttr,queryOrderNumAttr);
             isQueryOrderMakerConstructReqd=false;
-            queryOrderMaker->Print();
             return 1;
         }
         isQueryOrderMakerConstructReqd=false;

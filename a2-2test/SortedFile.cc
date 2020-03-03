@@ -154,7 +154,6 @@ int SortedFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
             return 1; 
         }
     if(queryOrderMaker!=nullptr && isBinarySearchNeeded){
-        printf("Going to Binary search\n");
         int searchresult = binarysearch(temp, literal, whichPage, mySortedFile->GetLength()-1); 
         isBinarySearchNeeded=false;
         if(searchresult == 0){

@@ -30,6 +30,7 @@ SortedFile::SortedFile () {
     mySortedFile=new File();
     currPage=new Page;
     sortOrder=new OrderMaker;
+    isBinarySearchNeeded=true;
 }
 SortedFile::~SortedFile(){
     delete sortFileHandler;
@@ -144,34 +145,37 @@ int SortedFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
     sortFileHandler->readHandler(mySortedFile,*currPage,whichPage,currRecord);
     ConstructQueryOrderMaker(cnf);
     ComparisonEngine comp;
-    // if(queryOrderMaker==nullptr){
-        //Linear Search
-        Record temp; 
-        int res;
-        int count=0;
-        read_next_record:
-            res = GetNext(temp);
-            count++; 
-            if (res==0)
+    Record temp;
+    if(GetNext(temp)==0){
                 return 0; 
-            if(!(comp.Compare(&temp, &literal, &cnf))){
-                goto read_next_record;
             }
-        fetchme.Consume(&temp);
-        return 1;
+    if(comp.Compare(&temp,&literal,&cnf)==1){
+            fetchme.Consume(&temp);
+            return 1; 
+        }
+    if(queryOrderMaker!=nullptr && isBinarySearchNeeded){
+        printf("Going to Binary search\n");
+        int searchresult = binarysearch(temp, literal, whichPage, mySortedFile->GetLength()-1); 
+        isBinarySearchNeeded=false;
+        if(searchresult == 0){
+            return 0; 
+        }
+    }
+    //Linear Search
 
-    // }else{
-    //     //Binary Search
-    //     Record temp;
-    //     Schema schema("catalog","lineitem");
-    //     GetNext(temp);
-    //     temp.Print(&schema);
-    //     // literal.Print(&schema);
-    //     printf("%d",comp.Compare(&temp,&literal,queryOrderMaker));
-    //     return 0;
-
-    // }
-    // return 0; 
+    int res;
+    int count=0;
+    read_next_record:
+        res = GetNext(temp);
+        count++; 
+        if (res==0){
+            return 0; 
+        }
+        if(!(comp.Compare(&temp, &literal, &cnf))){
+            goto read_next_record;
+        }
+    fetchme.Consume(&temp);
+    return 1; 
 }
 
 void SortedFile::AddMetadata(const char *fpath,void *startup){
@@ -227,45 +231,89 @@ void SortedFile::setup(const char *fpath,void *startup){
 int SortedFile::ConstructQueryOrderMaker(CNF &cnf){
     if(isQueryOrderMakerConstructReqd){
         int sortOrderAttr[MAX_ANDS];
+        int literalAttr[MAX_ANDS];
         Type sortOrderTypeAttr[MAX_ANDS];
         int sortOrderNumAttr=0;
         storedSortOrder->getAttributes(sortOrderAttr,sortOrderTypeAttr,sortOrderNumAttr);
         int CNFAttr[MAX_ANDS];
-        CompOperator CNFOperators[MAX_ANDS];
+        Type CNFAttTypes[MAX_ANDS];
         int CNFNumAttr=0;
-        cnf.getSingleExpressionAttributes(CNFAttr,CNFOperators,CNFNumAttr);
+        cnf.getSingleExpressionAttributes(literalAttr, CNFAttr,CNFAttTypes,CNFNumAttr);
         int queryOrderAttr[MAX_ANDS];
         Type queryOrderTypeAttr[MAX_ANDS];
         int queryOrderNumAttr=0;
-        int i=0,j=0,k=0;
-        for(i=0;i<sortOrderNumAttr;i++){
-            for(j=0;j<CNFNumAttr;j++){
-                if(sortOrderAttr[i]==CNFAttr[j] && CNFOperators[j]==Equals){
-                    queryOrderAttr[k]=sortOrderAttr[i];
-                    queryOrderTypeAttr[k]=sortOrderTypeAttr[i];
-                    k++;
-                    queryOrderNumAttr++;
+        for(int i=0; i<sortOrderNumAttr; i++){
+            int j=0;
+            for(j=0; j<CNFNumAttr; j++){
+                if(sortOrderAttr[i]==CNFAttr[j]){
+                    queryOrderAttr[queryOrderNumAttr] = literalAttr[j];
+                    queryOrderTypeAttr[queryOrderNumAttr] = CNFAttTypes[j]; 
+                    queryOrderNumAttr++; 
                     break;
                 }
             }
             if(j==CNFNumAttr){
-                queryOrderNumAttr=0;
                 break;
             }
         }
         if(queryOrderNumAttr!=0){
-            queryOrderMaker=new OrderMaker();
+            queryOrderMaker = new OrderMaker;
             queryOrderMaker->setAttributes(queryOrderAttr,queryOrderTypeAttr,queryOrderNumAttr);
-            isQueryOrderMakerConstructReqd=false;
-            return 1;
         }
         isQueryOrderMakerConstructReqd=false;
-        return 0;
+        return 1;
     }
     
     return 0;
 }
 
-
+int SortedFile::binarysearch(Record &temp, Record &literal, off_t low, off_t high){
+    if(low>high){
+        return 0; 
+    }
+    ComparisonEngine ceng; 
+    off_t mid = (low) + (high-low)/2; 
+    Page *tempPage = new Page; 
+    mySortedFile->GetPage(tempPage, mid); 
+    if(tempPage->GetFirst(&temp)==0){
+        delete tempPage;
+        return 0; 
+    }
+    if(ceng.Compare(&literal, queryOrderMaker, &temp, storedSortOrder)<=0){
+        delete tempPage; 
+        return binarysearch(temp, literal, low, mid-1); 
+    }
+    int recNum=2;
+    while (tempPage->GetFirst(&temp)!=0)
+    {   
+        if(ceng.Compare(&literal, queryOrderMaker, &temp, storedSortOrder)==0){
+            whichPage = mid; 
+            currPage->EmptyItOut();
+            mySortedFile->GetPage(currPage,mid);
+            sortFileHandler->popRecordsFromCurPage(*currPage, recNum-1); 
+            delete tempPage;
+            return 1; 
+        }
+        recNum++; 
+    }
+    off_t fileLen = mySortedFile->GetLength(); 
+    if(mid+1 < fileLen-1){
+        tempPage->EmptyItOut();
+        mySortedFile->GetPage(tempPage, mid+1); 
+        tempPage->GetFirst(&temp);
+        if(ceng.Compare(&literal, queryOrderMaker, &temp, storedSortOrder)==0){
+            whichPage = mid; 
+            currPage->EmptyItOut();
+            mySortedFile->GetPage(currPage,mid);
+            sortFileHandler->popRecordsFromCurPage(*currPage, recNum); 
+            delete tempPage;
+            return 1; 
+        }
+        delete tempPage;
+        return binarysearch(temp, literal, mid+1,high);
+    }
+    delete tempPage;
+    return 0;   
+}
 
 

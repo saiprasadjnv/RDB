@@ -28,6 +28,7 @@ private:
 	OrderMaker *storedSortOrder;
 	OrderMaker *queryOrderMaker;
 	bool isQueryOrderMakerConstructReqd;
+	bool isBinarySearchNeeded;
 public:
 	 SortedFile ();
 	 ~SortedFile(); 
@@ -45,6 +46,7 @@ public:
 	 void AddMetadata(const char *fpath,void *startup);
 	 void setup(const char *fpath,void *startup);
 	 int ConstructQueryOrderMaker(CNF &cnf);
+	 int binarysearch(Record &temp, Record &literal, off_t low, off_t high);
 
 };
 #endif

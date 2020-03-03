@@ -431,6 +431,7 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *leftSchema,
 
 	// and get the record
 	literal.SuckNextRecord (&mySchema, outRecFile);
+	
 
 	// close the record file
 	fclose (outRecFile);
@@ -624,28 +625,45 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 
 	// close the record file
 	fclose (outRecFile);
-	literal.Print(&outSchema);
+	// literal.Print(&outSchema);
 	remove("sdafdsfFFDSDA");
 	remove("hkljdfgkSDFSDF");
 }
 
 
-void CNF::getSingleExpressionAttributes(int* putAttsHere, CompOperator* putOpsHere, int &totalCNFs){
+void CNF::getSingleExpressionAttributes(int* literalAtts, int* putAttsHere, Type* putTypesHere, int &totalCNFs){
 	 int j=0; 
+	 int countUntilhere=0; 
 	 for(int i=0; i<numAnds; i++){
 		 if (orLens[i]==1)
 		 {
-			 if(orList[i][0].operand2 == Literal){ 
-			 	putAttsHere[j] = orList[i][0].whichAtt1;
-			 }	
-
-			 else if(orList[i][0].operand1 == Literal){
-				 putAttsHere[j] = orList[i][0].whichAtt2;
+			 if(orList[i][0].op != Equals){
+				 countUntilhere += 1; 
+				 continue; 
 			 }
-			 putOpsHere[j] = orList[i][0].op;
-			 j++; 
+			 if((orList[i][0].operand1 == Left && orList[i][0].operand2 == Right) ||
+		      (orList[i][0].operand2 == Left && orList[i][0].operand1 == Right)){
+				  countUntilhere += 1; 
+				  continue; 
+			 }
+			if(orList[i][0].operand1 == Literal){
+				literalAtts[j] = countUntilhere; 
+				putAttsHere[j] = orList[i][0].whichAtt2;
+				putTypesHere[j] = orList[i][0].attType;
+				countUntilhere+=1; 
+				j++; 
+			 }else if(orList[i][0].operand2 == Literal){
+				literalAtts[j] = countUntilhere; 
+				putAttsHere[j] = orList[i][0].whichAtt1;
+				putTypesHere[j] = orList[i][0].attType;
+				countUntilhere+=1; 
+				j++; 
+			 }
+		 }else{
+			 countUntilhere += orLens[i]; 
 		 }
 		 
 	 }
 	 totalCNFs = j; 
 }
+

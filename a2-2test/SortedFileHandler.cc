@@ -21,6 +21,9 @@ int SortedFileHandler::readHandler(File *file,Page &curPage,off_t &whichPage,int
 		mergeNewRecords(*file,outputPipe);
 		file->Open(1,f_path);
         currentState='r';
+		whichPage=0,currentReadPage=0;
+		curPage.EmptyItOut();
+		file->GetPage(&curPage,whichPage);
         return 1;
     }
     return 0;
@@ -52,6 +55,7 @@ int SortedFileHandler::writeHandler(File &file,Page &curPage,off_t &whichPage){
 */
 int SortedFileHandler::tearDown(File &file,Page &curPage,off_t &whichPage){
     int status=readHandler(&file,curPage,whichPage,0);
+	curPage.EmptyItOut();
     return status;
 
 }

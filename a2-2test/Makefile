@@ -1,5 +1,5 @@
 
-CC = clang++ -O2 -Wno-deprecated
+CC = clang++ -O2 -Wno-deprecated -std=c++11 
 
 tag = -i
 
@@ -7,7 +7,7 @@ ifdef linux
 tag = -n
 endif
 
-all: main test1.out test.out
+all: main test1.out test.out sortedfiletest
 
 main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o main.o
 	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o main.o -ll -lpthread
@@ -23,6 +23,12 @@ a2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o Gene
 
 a1test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a1-test.o
 	$(CC) -o a1test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a1-test.o -ll -lpthread
+
+sortedfiletest: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o sortedfiletest.o
+	$(CC) -o sortedfiletest Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o sortedfiletest.o -ll -lpthread -lgtest
+
+sortedfiletest.o: SortedFileTest.cc
+	$(CC) -g -c SortedFileTest.cc
 
 test.o: test.cc
 	$(CC) -g -c test.cc
@@ -96,3 +102,5 @@ clean:
 	rm -f y.tab.c
 	rm -f lex.yy.c
 	rm -f y.tab.h
+
+	

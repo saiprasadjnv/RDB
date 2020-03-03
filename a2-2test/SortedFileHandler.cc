@@ -18,15 +18,7 @@ SortedFileHandler::SortedFileHandler(){
 int SortedFileHandler::readHandler(File *file,Page &curPage,off_t &whichPage,int lastReadRecord){
     if(currentState=='w'){
 		inputPipe->ShutDown();	
-		// printf("In readhandler %ld\n",file);
 		mergeNewRecords(*file,outputPipe);
-		// pthread_join(bigQThread,NULL);
-
-        // file.AddPage(&curPage,whichPage);
-        // file.GetPage(&curPage,currentReadPage);
-        // popRecordsFromCurPage(curPage,lastReadRecord);
-        // whichPage=currentReadPage;
-		// file.Close();
 		file->Open(1,f_path);
         currentState='r';
         return 1;
@@ -39,7 +31,6 @@ int SortedFileHandler::readHandler(File *file,Page &curPage,off_t &whichPage,int
 */
 int SortedFileHandler::writeHandler(File &file,Page &curPage,off_t &whichPage){
     if(currentState=='r'){
-		// printf("Inside writeHandler");
         currentReadPage=whichPage;
 		inputPipe=new Pipe(100);
 		outputPipe=new Pipe(100);
@@ -102,35 +93,28 @@ void* SortedFileHandler::bigq(void * arg){
 void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 	Record *temp1=new Record;
 	Record *temp2=new Record;
-	// printf("In sortedfilehandler %ld\n",&file);
 	file.Close();
-	// perror("After file close mergenewrecords\n");
 	char newFile[100];
-	// printf("%s",f_path);
 	sprintf(newFile,"%s.tmp",f_path);
 	Page *tempcurrPage=new Page;
 	Page *mainCurrPage=new Page;
 	File *commonFile=new File; 
 	off_t tempPageNum=0;
 	off_t mainPageNum=0;
-	// printf("Opening tmpFile\n");
 	commonFile->Open(0, newFile);
 	commonFile->Close(); 
 	delete commonFile;
 
 	if(outputPipe->Remove(temp1) == 0 ){
-		// printf("Setting temp1 to null\n");
 		temp1=nullptr;
 	}
 	if(GetRecord(*mainCurrPage,mainPageNum,f_path,*temp2) == 0){
-		// printf("Setting temp2 to null\n");
 		temp2=nullptr;
 	}
 	ComparisonEngine cEngine;
 	while(temp1!=nullptr || temp2!=nullptr){
 		if(temp1!=nullptr && temp2!=nullptr){
 			if(cEngine.Compare(temp1,temp2,sortOrder)<=0){
-				// tmpFile->Add(*temp1);
 				AddRecord(*tempcurrPage,tempPageNum,newFile,*temp1);
 				delete temp1;
 				temp1=new Record();
@@ -138,7 +122,6 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 					temp1=nullptr;
 				}
 			}else{
-				// tmpFile->Add(*temp2);
 				AddRecord(*tempcurrPage,tempPageNum,newFile,*temp2);
 				delete temp2;
 				temp2=new Record();
@@ -148,8 +131,6 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 
 			}
 		}else if(temp1==nullptr){
-			//temp2
-				// tmpFile->Add(*temp2);
 				AddRecord(*tempcurrPage,tempPageNum,newFile,*temp2);
 				delete temp2;
 				temp2=new Record();
@@ -157,25 +138,18 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 					temp2=nullptr;
 				}
 		}else if(temp2==nullptr){
-			//temp1
-				// tmpFile->Add(*temp1);
 				AddRecord(*tempcurrPage,tempPageNum,newFile,*temp1);
 				delete temp1;
 				
 				temp1=new Record();
 				if(!outputPipe->Remove(temp1)){
-					// printf("Read all the records from oupipe\n");
 					temp1=nullptr;
 				}
 
 		}
 		
 	}
-	// outputPipe->ShutDown();
-	// perror("error before addpage\n");
 	AddPage(*tempcurrPage, tempPageNum, newFile);
-	// perror("error after addpage\n");
-	// commonFile.Close();
 	delete tempcurrPage;
 	delete mainCurrPage;
 	if(temp1!=nullptr){
@@ -184,14 +158,7 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 	if(temp2!=nullptr){
 		delete temp2;
 	}
-	// perror("error before removing\n");
-	// printf("file getlength before removal :%ld\n",file.GetLength());
-	// Page temp3;
-	// file.GetPage(&temp3,0);
-	// file.AddPage(&temp3,0);
-	// printf("file getlength after add page mergenewrec :%ld\n",file.GetLength());
 	remove((const char*)f_path);
-	// perror("error removing\n");
 	rename(newFile,f_path);
 
 }
@@ -206,7 +173,6 @@ int SortedFileHandler::GetRecord(Page &currPage, off_t &pageNum ,char *f_path, R
 		if(pageNum +1 < fileLen -1){
 			++pageNum;
 			file->GetPage(&currPage, pageNum);
-			// perror("getrecord getpage\n");
 			currPage.GetFirst(&rec);
 			file->Close();
 			delete file;

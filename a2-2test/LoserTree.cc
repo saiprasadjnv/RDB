@@ -39,8 +39,6 @@ LoserTree::LoserTree(Pipe &input, Pipe &output, long runlength, OrderMaker &sort
 }
 
 LoserTree::~LoserTree(){
-    // delete[] records;
-    // delete[] myTree;
     delete[] pagesPerRun; 
     delete mySchema; 
     tempFile->Close();
@@ -52,7 +50,6 @@ LoserTree::~LoserTree(){
 
 
 void *LoserTree::sort(void * args){
-    // printf("IN sort");
     LoserTree *thisNode = (LoserTree *)args; 
     thisNode->pass1(); 
     thisNode-> pass2(); 
@@ -64,15 +61,12 @@ void LoserTree::initialize(){
     for (int i = 0; i < numOfRecords; i++)
     {
       long res=play(PARENT(TREENODEINDEX(i)), myTree[TREENODEINDEX(i)]);
-      //printf("### winner:%d, at %d ###\n",myTree[res].recordIndex,res);
        currentWinner->recordIndex = myTree[res].recordIndex;
        currentWinner->runNumber = myTree[res].runNumber;
     }
-    //records[currentWinner->recordIndex]->Print(mySchema); 
 }   
 
 void LoserTree::pass1(){
-    // printf("Opening tempFile\n");
     tempFile->Open(0,"tempFile.bin");
     setupPass1(); 
     initialize();
@@ -130,8 +124,7 @@ void LoserTree::pass2(){
     currentBuffer[0]=0; 
     for(int i=1; i<150; i++){
         currentBuffer[i] = pagesPerRun[i-1]; 
-    }   
-    //records[winnerIndex]->Print(mySchema); 
+    }    
     while(1){
         winnerIndex = currentWinner->recordIndex;
         if(currentWinner->runNumber == LONG_MAX){
@@ -175,7 +168,6 @@ void LoserTree::pass2(){
             records[winnerIndex]->Consume(&temp);  
         }
         res = play(PARENT(TREENODEINDEX(winnerIndex)), myTree[TREENODEINDEX(winnerIndex)]);
-       // printf("### winner:%d, at %d ###\n",myTree[res].recordIndex,res);
         currentWinner->recordIndex = myTree[res].recordIndex;
         currentWinner->runNumber = myTree[res].runNumber; 
     }
@@ -184,7 +176,6 @@ void LoserTree::pass2(){
 
 
 long LoserTree::play(long j, LoserTree::LoserNode &player2){
-  // printf(" **%d** ", j);
     LoserNode *winner = new LoserNode; 
     long winnerIndex=0;
     long res;
@@ -208,8 +199,7 @@ long LoserTree::play(long j, LoserTree::LoserNode &player2){
             winner->runNumber = player2.runNumber; 
         }
         winnerIndex=TREENODEINDEX(winner->recordIndex);
-        delete winner;
-        // return TREENODEINDEX(winner->recordIndex) ; 
+        delete winner; 
         return winnerIndex;        
     }
     if (myTree[j].recordIndex == -1)
@@ -237,7 +227,6 @@ long LoserTree::play(long j, LoserTree::LoserNode &player2){
     }
         winnerIndex=TREENODEINDEX(winner->recordIndex);
         delete winner;
-        // return TREENODEINDEX(winner->recordIndex) ; 
         return winnerIndex;
 }
 
@@ -254,7 +243,6 @@ int LoserTree::compare(LoserTree::LoserNode &node1, LoserTree::LoserNode &node2)
     else if((node2.runNumber < node1.runNumber) || (node1.runNumber==LONG_MAX && node2.runNumber==LONG_MAX)){
         return 0; 
     }
-    // int res = comp.Compare(&records[node1.recordIndex], &records[node2.recordIndex], sortorder); 
     int res = comp.Compare(records[node1.recordIndex], records[node2.recordIndex], sortorder);
     if(res<0){
         return 1; 
@@ -281,15 +269,12 @@ int LoserTree::compare(Record &rec1, Record &rec2){
 }
 
 int LoserTree::Add (Record &rec) {
-	//rec.Print(mySchema); 
      if(tempPage->Append(&rec)==0){
             tempFile->AddPage(tempPage, whichPage);
-           // printf("Added page: %d\n", whichPage); 
             whichPage++;
             pagesPerRun[currRunNumber]++;
             tempPage->EmptyItOut();
-            tempPage->Append(&rec);
-            //printf("After append\n");          
+            tempPage->Append(&rec);         
         }
     numRecsInRun +=1; 
     return 1;
@@ -298,13 +283,10 @@ int LoserTree::Add (Record &rec) {
 
 int LoserTree::writeDirtyPage(){
         tempFile->AddPage(tempPage, whichPage);
-       // printf("Added Page in dirty Read: %d \n", whichPage);
         whichPage++;
         pagesPerRun[currRunNumber]++;
-       // printf("pages per run in currRunNumber %d - %d \n", currRunNumber, pagesPerRun[currRunNumber]);
         tempPage->EmptyItOut();
         numRecsInRun=0;
-        // currRunNumber+=1;
     return 1;
 }
 
@@ -320,15 +302,11 @@ void LoserTree::setupPass1(){
     for (int i = 0; i < numOfRecords; i++) {
         int result = in->Remove(&temp); 
        if(result==1){
-          // printf("Read record at i=%d, updating treeindex: %ld\n", i, TREENODEINDEX(i));
-           //temp.Print(mySchema);
             myTree[TREENODEINDEX(i)].runNumber = 0; 
             if(records[i]!=nullptr){
 
             delete records[i];
             }
-            //printf("Read this record: \n");
-            //temp.Print(mySchema);
             records[i]= new Record();
             records[i]->Consume(&temp);
        }
@@ -341,7 +319,6 @@ void LoserTree::setupPass1(){
 void LoserTree::setupPass2(){
     int numOfruns = 0; 
     int i=0; 
-    // printf("Opening tempFile pass2\n");
     tempFile->Open(1,"tempFile.bin");
     while(pagesPerRun[i]!=0){
         if(i>0)
@@ -387,5 +364,4 @@ void LoserTree::cleanup(){
     currRunNumber=0;
     delete[] records;
     delete[] myTree;
-    // delete[] pageBuffers; 
 }

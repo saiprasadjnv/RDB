@@ -17,20 +17,13 @@ DBFile::DBFile () {
 }
 
 int DBFile::Create (const char *f_path, fType f_type, void *startup) {
-	// HeapFile heapFile;
-	// GenericDBFile *myFile = &heapFile;
-	// heapFile.test(); 
     switch(f_type){
         case heap:
 			myFile = new HeapFile();
-			// myFile = &heapFile;
-			// myFile->test(); 
 			myFile->Create(f_path, NULL); 
 			myFile->AddMetadata(f_path,startup);
-			// myFile->test(); 
             return 1;
         case sorted:
-			// printf("Inside DBFile");
 			myFile=new SortedFile();
 			myFile->Create(f_path,startup);
 			myFile->AddMetadata(f_path,startup);
@@ -61,6 +54,7 @@ int DBFile::Open (const char *f_path) {
 		myFile=new SortedFile();
 
 	}
+	fclose(metaFile);
 	myFile->Open(f_path);
 	return 1;
 }

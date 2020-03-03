@@ -16,14 +16,12 @@ class SortedFile: public GenericDBFile{
 
 private:
 	File *mySortedFile; 
-	Page currPage;
+	Page *currPage;
 	off_t whichPage; 
 	int currRecord;  
-	// HeapFileHandler *handler;
-	OrderMaker sortOrder;
+	OrderMaker *sortOrder;
 	long sortRunLength;
 	struct sortInfo {OrderMaker *o; int l;};
-	// BigQ *bigQ;
 	Pipe *inputPipe;
 	Pipe *outputPipe;
 	SortedFileHandler *sortFileHandler;

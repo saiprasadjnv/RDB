@@ -15,7 +15,7 @@ class HeapFile: public GenericDBFile{
 
 private:
 	File *myHeapFile; 
-	Page currPage;
+	Page *currPage;
 	off_t whichPage; 
 	int currRecord;  
 	HeapFileHandler *handler;

@@ -11,10 +11,6 @@ class SortedFileHandler{
     private:
         char currentState='r';
         int currentReadPage;
-        // struct consumerArgs{
-        //     Pipe **outputPipe;
-        //     char* fPath;
-        // };
         struct bigQArgs{
             Pipe *inputPipe;
             Pipe *outputPipe;
@@ -25,7 +21,6 @@ class SortedFileHandler{
         Pipe* outputPipe;
         OrderMaker* sortOrder;
         long runlength;
-        // pthread_t consumerThread;
         pthread_t bigQThread;
         char* f_path;
 
@@ -37,7 +32,6 @@ class SortedFileHandler{
      char getCurrentState();
      int popRecordsFromCurPage(Page &curPage,int noOfRecordsToPop);
      int init(Page &curPage,off_t &whichPage,int &currentRecord);
-    //  static void* consumer(void * args);
      static void* bigq(void *args);
      void mergeNewRecords(File &file,Pipe *outputPipe);
      int AddRecord(Page &currPage, off_t &pageNum, char* f_path, Record &rec);

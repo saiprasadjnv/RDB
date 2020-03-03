@@ -1,19 +1,19 @@
 #include <string.h>
 #include <iostream>
-#include "Handler.h"
+#include "HeapFileHandler.h"
 using namespace std;
 
-Handler::Handler(){
+HeapFileHandler::HeapFileHandler(){
     currentReadPage=0;
 }
 
 /*
 * Read Handler that preprocess the state of the DBFile from write to read mode.
 */
-int Handler::readHandler(File &file,Page &curPage,off_t &whichPage,int lastReadRecord){
+int HeapFileHandler::readHandler(File *file,Page &curPage,off_t &whichPage,int lastReadRecord){
     if(currentState=='w'){
-        file.AddPage(&curPage,whichPage);
-        file.GetPage(&curPage,currentReadPage);
+        file->AddPage(&curPage,whichPage);
+        file->GetPage(&curPage,currentReadPage);
         popRecordsFromCurPage(curPage,lastReadRecord);
         whichPage=currentReadPage;
         currentState='r';
@@ -25,7 +25,7 @@ int Handler::readHandler(File &file,Page &curPage,off_t &whichPage,int lastReadR
 /*
 * Write Handler that preprocess the state of the DBFile from read to write mode.
 */
-int Handler::writeHandler(File &file,Page &curPage,off_t &whichPage){
+int HeapFileHandler::writeHandler(File &file,Page &curPage,off_t &whichPage){
     if(currentState=='r'){
         currentReadPage=whichPage;
         int len=file.GetLength();
@@ -41,22 +41,23 @@ int Handler::writeHandler(File &file,Page &curPage,off_t &whichPage){
 /*
 * Method to perform any pre shutdown tasks.
 */
-int Handler::tearDown(File &file,Page &curPage,off_t &whichPage){
-    int status=readHandler(file,curPage,whichPage,0);
+int HeapFileHandler::tearDown(File &file,Page &curPage,off_t &whichPage){
+    int status=readHandler(&file,curPage,whichPage,0);
+    return status;
 
 }
 
 /*
 * Method to return the currentState of the file.
 */
-char Handler::getCurrentState(){
+char HeapFileHandler::getCurrentState(){
     return currentState;
 }
 
 /*
 * Method to pop the records - number given in recordsToBePopped  from the curPage 
 */
-int Handler::popRecordsFromCurPage(Page &curPage,int recordsToBePopped){
+int HeapFileHandler::popRecordsFromCurPage(Page &curPage,int recordsToBePopped){
     Record temp;
     for(int i=0;i<recordsToBePopped;i++){
         if(curPage.GetFirst(&temp)==0){
@@ -69,6 +70,7 @@ int Handler::popRecordsFromCurPage(Page &curPage,int recordsToBePopped){
 /*
 * Method to initialize the system.
 */
-int Handler::init(Page &curPage,off_t &whichPage,int &currentRecord){
+int HeapFileHandler::init(Page &curPage,off_t &whichPage,int &currentRecord){
     currentState='r';
+    return 1;
 }

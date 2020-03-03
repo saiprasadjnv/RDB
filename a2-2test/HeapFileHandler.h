@@ -3,13 +3,13 @@
 
 #include "File.h"
 
-class Handler{
+class HeapFileHandler{
     private:
         char currentState='r';
         int currentReadPage;
     public:
-     Handler();
-     int readHandler(File &file,Page &curPage,off_t &whichPage,int lastReadRecord);
+     HeapFileHandler();
+     int readHandler(File *file,Page &curPage,off_t &whichPage,int lastReadRecord);
      int writeHandler(File &file,Page &curPage,off_t &whichPage);
      int tearDown(File &file,Page &curPage,off_t &whichPage);
      char getCurrentState();

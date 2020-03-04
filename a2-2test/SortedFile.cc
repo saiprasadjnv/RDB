@@ -277,6 +277,10 @@ int SortedFile::ConstructQueryOrderMaker(CNF &cnf){
     return 0;
 }
 
+/*
+Perform binary search on the current dbfile using the query ordermaker and given record literal.
+It then stores the matched record in the temp parameter and return 1 in case of success otherwise 0.
+*/
 int SortedFile::binarysearch(Record &temp, Record &literal, off_t low, off_t high){
     if(low>high){
         return 0; 

@@ -17,8 +17,12 @@ int ComparisonEngine :: Compare(Record *left, Record *right, OrderMaker *orderUs
 	char *right_bits = right->GetBits();
 
 	for (int i = 0; i < orderUs->numAtts; i++) {
+		// printf("numAtts -i:%d - %d\n",orderUs->numAtts,i);
+		// printf("Whichattrs: %d\n",orderUs->whichAtts[i]);
 		val1 = left_bits + ((int *) left_bits)[orderUs->whichAtts[i] + 1];
+		// printf("val1 %s:\n",val1);
 		val2 = right_bits + ((int *) right_bits)[orderUs->whichAtts[i] + 1];
+		// printf("val2 %s:\n",val2);
 	
 		// these are used to store the two operands, depending on their type
 		int val1Int, val2Int;
@@ -49,6 +53,8 @@ int ComparisonEngine :: Compare(Record *left, Record *right, OrderMaker *orderUs
 			// cast the two bit strings to doubles
 			val1Double = *((double *) val1);
 			val2Double = *((double *) val2);
+			// printf("val1 %f:\n",val1Double);
+			// printf("val2 %f:\n",val2Double);
 	
 			// and do the comparison
 			if (val1Double < val2Double)

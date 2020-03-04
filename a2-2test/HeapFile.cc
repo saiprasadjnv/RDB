@@ -137,6 +137,9 @@ int HeapFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
     return 1; 
 }
 
+/*
+Creates and writes the metadata info of the current file to a new metadata file for future use.
+*/
 void HeapFile::AddMetadata(const char *fpath,void *startup){
     char filePath[100];
     sprintf(filePath,"%s.meta",fpath);

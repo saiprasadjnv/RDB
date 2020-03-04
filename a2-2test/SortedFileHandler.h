@@ -2,7 +2,6 @@
 #define SORTEDFILEHANDLER_H
 
 #include "File.h"
-// #include "SortedFile.h"
 #include "BigQ.h"
 #include "pthread.h"
 

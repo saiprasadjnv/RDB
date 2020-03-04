@@ -117,6 +117,10 @@ void OrderMaker :: Print () {
 	}
 }
 
+/*
+* Method to retrieve the attribute details of this OrderMaker instance. The attributes are stored in the 
+* arguments.
+*/
 void OrderMaker::getAttributes(int* putAttributes, Type* putTypesHere, int &numOfAtts){
 	for(int i=0; i< numAtts; i++){
 		putAttributes[i] = whichAtts[i];
@@ -630,7 +634,13 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 	remove("hkljdfgkSDFSDF");
 }
 
-
+/*
+* Method to retrieve the attribute details of the single expressions which has equality constraint.
+* The details will be stored in the arguments which are passed by reference. literalAtts contains
+* the position of the attribute in record literal, putAttsHere contains the attributes of the expression,
+* putTypesHere contains the type of the attributes and totalCNFs contains the number of single expressions
+* with equality constraint. This method filters out if both the operands are non-literals.
+*/
 void CNF::getSingleExpressionAttributes(int* literalAtts, int* putAttsHere, Type* putTypesHere, int &totalCNFs){
 	 int j=0; 
 	 int countUntilhere=0; 

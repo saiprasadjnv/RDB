@@ -49,24 +49,20 @@ void *DuplicateRemovalThread(void* myargs){
     pthread_create(&bigQthread, NULL, bigQThread, (void*)bigQArgs);
     Record* temp = new Record; 
     Record* rec1 = nullptr; 
-    Record* rec2 = new Record; 
     ComparisonEngine ceng; 
     int i=0; 
     while(bigQPipe->Remove(temp)){
-        rec2->Consume(temp); 
         if(rec1==nullptr){
             // printf("exiting from if1: %d ", i++);
             rec1 = new Record; 
-            rec1->Consume(rec2); 
-            delete rec2;
+            rec1->Consume(temp); 
             delete temp;  
-            rec2 = new Record; 
             temp = new Record; 
             continue; 
         }
-        if(ceng.Compare(rec1, rec2, sortOrder)==0){
-            delete rec2; 
-            rec2 = new Record; 
+        if(ceng.Compare(rec1, temp, sortOrder)==0){
+            delete temp; 
+            temp = new Record; 
             // printf("exiting from if2: %d ", i++);
             continue; 
         }
@@ -74,15 +70,12 @@ void *DuplicateRemovalThread(void* myargs){
         inArgs->outPipe->Insert(rec1); 
         delete rec1; 
         rec1 = new Record; 
-        rec1->Consume(rec2); 
-        delete rec2;
+        rec1->Consume(temp); 
         delete temp;  
-        rec2 = new Record; 
         temp = new Record; 
-       
     }
     delete temp; 
-    delete rec2; 
+    delete rec1; 
     delete bigQPipe; 
     inArgs->outPipe->ShutDown(); 
     delete inArgs; 

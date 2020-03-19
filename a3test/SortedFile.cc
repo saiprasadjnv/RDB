@@ -108,8 +108,7 @@ int SortedFile::Close () {
 
 /*
 
-* Method to add new records given in rec to the current page and file if current page is full. 
-This will insert the record to a pipe to get the record processed based on the sort order.
+* Method to add new records given in rec to the current page and file if current page is full.
 */
 void SortedFile::Add (Record &rec) { 
     sortFileHandler->writeHandler(*mySortedFile,*currPage,whichPage);
@@ -140,8 +139,7 @@ int SortedFile::GetNext (Record &fetchme) {
 
 /*
 * Method to get the next record from file and check against the provided CNF 
-* and store it in the fetchme param if matched. It uses the query ordermaker constructed to perform 
-the combination of binary and linear search wherever possible.
+* and store it in the fetchme param if matched.
 */
 int SortedFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
     sortFileHandler->readHandler(mySortedFile,*currPage,whichPage,currRecord);
@@ -179,9 +177,6 @@ int SortedFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
     return 1; 
 }
 
-/*
-Method to create and add details of the current file into new metadata file for future use.
-*/
 void SortedFile::AddMetadata(const char *fpath,void *startup){
     char filePath[100];
     sprintf(filePath,"%s.meta",fpath);
@@ -199,9 +194,6 @@ void SortedFile::AddMetadata(const char *fpath,void *startup){
     fclose(metaFile);
 }
 
-/*
-Performs the intial setup by parsing the metadata file and storing the required details for future use.
-*/
 void SortedFile::setup(const char *fpath,void *startup){
     char metaFilePath[100];
 	sprintf(metaFilePath,"%s.meta",fpath);
@@ -235,9 +227,6 @@ void SortedFile::setup(const char *fpath,void *startup){
     sortFileHandler->runlength=sortRunLength;
 }
 
-/*
-Constructs new query ordermaker from the given CNF and stored sortOrder to use in future comparisons.
-*/
 int SortedFile::ConstructQueryOrderMaker(CNF &cnf){
     if(isQueryOrderMakerConstructReqd){
         int sortOrderAttr[MAX_ANDS];
@@ -277,10 +266,6 @@ int SortedFile::ConstructQueryOrderMaker(CNF &cnf){
     return 0;
 }
 
-/*
-Perform binary search on the current dbfile using the query ordermaker and given record literal.
-It then stores the matched record in the temp parameter and return 1 in case of success otherwise 0.
-*/
 int SortedFile::binarysearch(Record &temp, Record &literal, off_t low, off_t high){
     if(low>high){
         return 0; 

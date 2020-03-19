@@ -79,6 +79,8 @@ int attrs[1] = {0};
   testFile = new DBFile; 
   testFile->Open("testfile.bin");
   testFile->MoveFirst(); 
+  // ASSERT_EQ(1, testFile->GetNext(*temp)); 
+  testFile->Close();
   testFile->GetNext(*temp);
   testing::internal::CaptureStdout();
   temp->Print(&mySchema);

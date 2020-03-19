@@ -7,17 +7,17 @@ ifdef linux
 tag = -n
 endif
 
-test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o test.o
-	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o test.o -ll -lpthread
+test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o Function.o SelectFile.o SelectPipe.o Project.o DuplicateRemoval.o WriteOut.o Sum.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o test.o
+	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o Function.o SelectFile.o SelectPipe.o Project.o DuplicateRemoval.o WriteOut.o Sum.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o test.o -ll -lpthread
 	
-a2-2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a2-2test.o
-	$(CC) -o a2-2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a2-2test.o -ll -lpthread
+a2-2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o SelectFile.o SelectPipe.o Project.o DuplicateRemoval.o WriteOut.o Sum.o y.tab.o lex.yy.o a2-2test.o
+	$(CC) -o a2-2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o SelectFile.o SelectPipe.o Project.o DuplicateRemoval.o WriteOut.o Sum.o y.tab.o lex.yy.o a2-2test.o -ll -lpthread
 	
-a2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a2-test.o
-	$(CC) -o a2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a2-test.o -ll -lpthread
+a2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o SelectFile.o SelectPipe.o Project.o DuplicateRemoval.o WriteOut.o Sum.o y.tab.o lex.yy.o a2-test.o
+	$(CC) -o a2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o SelectFile.o SelectPipe.o Project.o DuplicateRemoval.o WriteOut.o Sum.o y.tab.o lex.yy.o a2-test.o -ll -lpthread
 	
-a1test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a1-test.o
-	$(CC) -o a1test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o y.tab.o lex.yy.o a1-test.o -ll
+a1test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o SelectFile.o SelectPipe.o Project.o DuplicateRemoval.o WriteOut.o Sum.o y.tab.o lex.yy.o a1-test.o
+	$(CC) -o a1test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o SelectFile.o SelectPipe.o Project.o DuplicateRemoval.o WriteOut.o Sum.o y.tab.o lex.yy.o a1-test.o -ll
 	
 test.o: test.cc
 	$(CC) -g -c test.cc
@@ -64,8 +64,26 @@ SortedFile.o: SortedFile.cc
 SortedFileHandler.o: SortedFileHandler.cc
 	$(CC) -g -c SortedFileHandler.cc
 
-RelOp.o: RelOp.cc
-	$(CC) -g -c RelOp.cc
+# RelOp.o: RelOp.cc
+# 	$(CC) -g -c RelOp.cc
+
+SelectFile.o: SelectFile.cc
+	$(CC) -g -c SelectFile.cc
+
+SelectPipe.o: SelectPipe.cc
+	$(CC) -g -c SelectPipe.cc
+
+Sum.o: Sum.cc
+	$(CC) -g -c Sum.cc
+
+Project.o: Project.cc
+	$(CC) -g -c Project.cc 
+
+WriteOut.o: WriteOut.cc
+	$(CC) -g -c WriteOut.cc 
+
+DuplicateRemoval.o: DuplicateRemoval.cc
+	$(CC) -g -c DuplicateRemoval.cc
 
 Function.o: Function.cc
 	$(CC) -g -c Function.cc

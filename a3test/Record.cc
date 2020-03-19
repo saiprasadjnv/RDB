@@ -499,7 +499,7 @@ void Record :: WriteToFile (FILE *targetFile, Schema *mySchema) {
 		// then is a character string
 		} else if (atts[i].myType == String) {
 			char *myString = (char *) &(bits[pointer]);
-			fprintf(targetFile, "%s", *myString);
+			fprintf(targetFile, "%s", myString);
 			fprintf(targetFile, "%c", '|'); 	
 		} 
 	}

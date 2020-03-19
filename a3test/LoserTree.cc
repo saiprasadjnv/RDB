@@ -284,6 +284,7 @@ int LoserTree::Add (Record &rec) {
 int LoserTree::writeDirtyPage(){
         tempFile->AddPage(tempPage, whichPage);
         whichPage++;
+        printf("Current run number: %d \n", currRunNumber);
         pagesPerRun[currRunNumber]++;
         tempPage->EmptyItOut();
         numRecsInRun=0;

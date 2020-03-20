@@ -10,8 +10,12 @@ Attribute DA = {"double", Double};
 int clear_pipe (Pipe &in_pipe, Schema *schema, bool print) {
 	Record rec;
 	int cnt = 0;
+	int i=0; 
+	printf("inside clear_pipe\n"); 
 	while (in_pipe.Remove (&rec)) {
+		printf("removed rec: %d\n", i++);
 		if (print) {
+			printf("removed rec: %d\n", i++);
 			rec.Print (schema);
 		}
 		cnt++;
@@ -68,6 +72,7 @@ void init_SF_p (char *pred_str, int numpgs) {
 
 void init_SF_s (char *pred_str, int numpgs) {
 	dbf_s.Open (s->path());
+	printf("%s file name\n", s->path());
 	get_cnf (pred_str, s->schema (), cnf_s, lit_s);
 	SF_s.Use_n_Pages (numpgs);
 }
@@ -256,53 +261,94 @@ void q5 () {
 // select sum (ps_supplycost) from supplier, partsupp 
 // where s_suppkey = ps_suppkey groupby s_nationkey;
 // expected output: 25 rows
+// void q6 () {
+
+// 	cout << " query6 \n";
+// 	char *pred_s = "(s_suppkey = s_suppkey)";
+// 	init_SF_s (pred_s, 100);
+// 	SF_s.Run (dbf_s, _s, cnf_s, lit_s); // 10k recs qualified
+// 	printf("Started s_run\n"); 
+
+// 	char *pred_ps = "(ps_suppkey = ps_suppkey)";
+// 	init_SF_ps (pred_ps, 100);
+
+// 	Join J;
+// 		// left _s
+// 		// right _ps
+// 		Pipe _s_ps (pipesz);
+// 		CNF cnf_p_ps;
+// 		Record lit_p_ps;
+// 		get_cnf ("(s_suppkey = ps_suppkey)", s->schema(), ps->schema(), cnf_p_ps, lit_p_ps);
+// 		cnf_p_ps.Print();
+
+// 	int outAtts = sAtts + psAtts;
+// 	Attribute s_nationkey = {"s_nationkey", Int};
+// 	Attribute ps_supplycost = {"ps_supplycost", Double};
+// 	Attribute joinatt[] = {IA,SA,SA,s_nationkey,SA,DA,SA,IA,IA,IA,ps_supplycost,SA};
+// 	Schema join_sch ("join_sch", outAtts, joinatt);
+// 	printf("%d join schema\n", join_sch.GetNumAtts()); 
+
+// 	GroupBy G;
+// 		// _s (input pipe)
+// 		Pipe _out (1);
+// 		Function func;
+// 			char *str_sum = "(ps_supplycost)";
+// 			get_cnf (str_sum, &join_sch, func);
+// 			func.Print ();
+// 			printf("%d join schema\n", join_sch.GetNumAtts()); 
+// 			OrderMaker grp_order (&join_sch);
+// 	G.Use_n_Pages (1);
+
+// 	SF_ps.Run (dbf_ps, _ps, cnf_ps, lit_ps); // 161 recs qualified
+// 	J.Run (_s, _ps, _s_ps, cnf_p_ps, lit_p_ps);
+// 	G.Run (_s_ps, _out, grp_order, func);
+
+// 	SF_ps.WaitUntilDone ();
+// 	J.WaitUntilDone ();
+// 	G.WaitUntilDone ();
+
+// 	Schema sum_sch ("sum_sch", 1, &DA);
+// 	int cnt = clear_pipe (_out, &sum_sch, true);
+// 	cout << " query6 returned sum for " << cnt << " groups (expected 25 groups)\n"; 
+// }
+
 void q6 () {
 
 	cout << " query6 \n";
 	char *pred_s = "(s_suppkey = s_suppkey)";
 	init_SF_s (pred_s, 100);
 	SF_s.Run (dbf_s, _s, cnf_s, lit_s); // 10k recs qualified
+	printf("Started s_run\n"); 
 
-	char *pred_ps = "(ps_suppkey = ps_suppkey)";
-	init_SF_ps (pred_ps, 100);
-
-	Join J;
-		// left _s
-		// right _ps
-		Pipe _s_ps (pipesz);
-		CNF cnf_p_ps;
-		Record lit_p_ps;
-		get_cnf ("(s_suppkey = ps_suppkey)", s->schema(), ps->schema(), cnf_p_ps, lit_p_ps);
-		cnf_p_ps.Print();
-
-	int outAtts = sAtts + psAtts;
 	Attribute s_nationkey = {"s_nationkey", Int};
-	Attribute ps_supplycost = {"ps_supplycost", Double};
-	Attribute joinatt[] = {IA,SA,SA,s_nationkey,SA,DA,SA,IA,IA,IA,ps_supplycost,SA};
-	Schema join_sch ("join_sch", outAtts, joinatt);
+	Schema groupby_schema ("catalog", "supplier");
+	printf("%d join schema\n", groupby_schema.GetNumAtts()); 
 
 	GroupBy G;
 		// _s (input pipe)
-		Pipe _out (1);
+		Pipe _out (100);
 		Function func;
-			char *str_sum = "(ps_supplycost)";
-			get_cnf (str_sum, &join_sch, func);
+			char *str_sum = "(s_nationkey)";
+			get_cnf (str_sum, &groupby_schema, func);
 			func.Print ();
-			OrderMaker grp_order (&join_sch);
-	G.Use_n_Pages (1);
-
-	SF_ps.Run (dbf_ps, _ps, cnf_ps, lit_ps); // 161 recs qualified
-	J.Run (_s, _ps, _s_ps, cnf_p_ps, lit_p_ps);
-	G.Run (_s_ps, _out, grp_order, func);
-
-	SF_ps.WaitUntilDone ();
-	J.WaitUntilDone ();
+			printf("%d join schema\n", groupby_schema.GetNumAtts()); 
+			int atts[1] = {3}; 
+			Type types[1] = {Int}; 
+			OrderMaker grp_order;
+			grp_order.setAttributes(atts, types, 1);
+	G.Use_n_Pages (3);
+	printf("In test.cc: in: %ld, out: %ld \n", &_s, &_out);
+	G.Run (_s, _out, grp_order, func);
+	// SF_s.WaitUntilDone (); 
 	G.WaitUntilDone ();
 
-	Schema sum_sch ("sum_sch", 1, &DA);
+	Schema sum_sch ("sum_sch", 1, &IA);
 	int cnt = clear_pipe (_out, &sum_sch, true);
 	cout << " query6 returned sum for " << cnt << " groups (expected 25 groups)\n"; 
+	dbf_s.Close();
+	
 }
+
 
 void q7 () { 
 /*

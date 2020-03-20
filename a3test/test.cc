@@ -9,13 +9,9 @@ Attribute DA = {"double", Double};
 
 int clear_pipe (Pipe &in_pipe, Schema *schema, bool print) {
 	Record rec;
-	int cnt = 0;
-	int i=0; 
-	printf("inside clear_pipe\n"); 
+	int cnt = 0; 
 	while (in_pipe.Remove (&rec)) {
-		printf("removed rec: %d\n", i++);
 		if (print) {
-			printf("removed rec: %d\n", i++);
 			rec.Print (schema);
 		}
 		cnt++;
@@ -72,7 +68,6 @@ void init_SF_p (char *pred_str, int numpgs) {
 
 void init_SF_s (char *pred_str, int numpgs) {
 	dbf_s.Open (s->path());
-	printf("%s file name\n", s->path());
 	get_cnf (pred_str, s->schema (), cnf_s, lit_s);
 	SF_s.Use_n_Pages (numpgs);
 }
@@ -312,6 +307,7 @@ void q5 () {
 // 	cout << " query6 returned sum for " << cnt << " groups (expected 25 groups)\n"; 
 // }
 
+//Custom q6 - need to change the original q6 function-----
 void q6 () {
 
 	cout << " query6 \n";

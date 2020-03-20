@@ -1,4 +1,5 @@
 #include "RelOp.h"
+#include "string.h"
 
   struct BigQArgs{
         Pipe *inPipe; 

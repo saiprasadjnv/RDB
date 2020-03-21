@@ -8,19 +8,13 @@ void test3 ();
 int add_data (FILE *src, int numrecs, int &res) {
 	DBFile dbfile;
 	dbfile.Open (rel->path ());
-	// printf("path:%s\n",rel->path());
-	// printf("numRecs:%ld\n",numrecs);
-	// printf("%d,%d\n",sizeof(numrecs),INT32_MAX);
 	Record temp;
 
 	int proc = 0;
 	int xx = 20000;
-	while ((res = temp.SuckNextRecord (rel->schema (), src)) && ++proc < numrecs) {
+	while ((res = temp.SuckNextRecord (rel->schema(), src)) && ++proc < numrecs) {
 		// temp.Print(rel->schema());
-		// cout << rel->schema()->GetNumAtts() << " numAtts in schema\n"; 
-		// printf("%d\n",proc);
 		dbfile.Add (temp);
-		// printf("After add in test\n");
 		if (proc == xx) cerr << "\t ";
 		if (proc % xx == 0) cerr << ".";
 	}
@@ -33,15 +27,15 @@ int add_data (FILE *src, int numrecs, int &res) {
 // create a dbfile interactively
 void test1 () {
 
-
+	int runlen = 0;
+	while (runlen < 1) {
+		cout << "\t\n specify runlength:\n\t ";
+		cin >> runlen;
+	}
 	OrderMaker o;
 	rel->get_sort_order (o);
 
-	int runlen = 8;
-	// while (runlen < 1) {
-	// 	cout << "\t\n specify runlength:\n\t ";
-	// 	cin >> runlen;
-	// }
+	
 	struct {OrderMaker *o; int l;} startup = {&o, runlen};
 
 	DBFile dbfile;
@@ -108,17 +102,6 @@ void test3 () {
 	CNF cnf; 
 	Record literal;
 	rel->get_cnf (cnf, literal);
-	Schema mySchema("catalog", "lineitem");
-	literal.Print(&mySchema);
-	int *putAttsHere = new int[MAX_ANDS]; 
-	CompOperator *putOpsHere = new CompOperator[MAX_ANDS]; 
-	int totalCNFsput; 
-	cnf.getSingleExpressionAttributes(putAttsHere, putOpsHere, totalCNFsput); 
-	cout << " Total Attributes Placed: " << totalCNFsput << "\n"; 
-	for(int i=0; i< totalCNFsput; i++){
-		cout << "Attribute "<< putAttsHere[i] << " Operation " << putOpsHere[i] << "\n";
-	}
-	return; 
 	DBFile dbfile;
 	dbfile.Open (rel->path());
 	dbfile.MoveFirst ();

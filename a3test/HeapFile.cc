@@ -27,6 +27,8 @@ HeapFile::~HeapFile(){
     delete handler;
     delete myHeapFile;
     delete currPage;
+    // myHeapFile->Close();
+    Close();
 }
 /* 
  * Method that creates a new file based on the ftype provided. 

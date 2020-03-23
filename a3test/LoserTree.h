@@ -8,6 +8,8 @@
 #define TREENODEINDEX(index) (index+ (INTERNALNODES(treeSize)))
 
 class LoserTree{
+private:
+  char* tempfileName; 
 
 public:
   struct LoserNode{

@@ -1,6 +1,9 @@
 #include <iostream>
 #include "LoserTree.h"
-
+#include "string.h"
+#include "stdlib.h"
+#include <cstdio>
+#include <cstring>
 LoserTree::LoserTree(Pipe &input, Pipe &output, long runlength, OrderMaker &sortOrder){
     runLen = runlength * 600;
     treeSize = runLen -1; 
@@ -17,7 +20,8 @@ LoserTree::LoserTree(Pipe &input, Pipe &output, long runlength, OrderMaker &sort
     in = &input; 
     out= &output;
     sortorder = &sortOrder;
-    //Initialize Tree internal nodes
+    tempfileName=new char[100];
+    strcpy(tempfileName,(("tempFile_"+to_string((int) rand())+".bin").c_str()));
     for(int i=0; i< INTERNALNODES(treeSize); i++){
         myTree[i].recordIndex = -1; 
         myTree[i].runNumber = LONG_MAX;
@@ -46,6 +50,8 @@ LoserTree::~LoserTree(){
     delete tempFile;
     delete[] pageBuffers;
     delete currentWinner;
+    delete[] tempfileName;
+    // remove((const char*)tempfileName);
 }
 
 
@@ -67,7 +73,7 @@ void LoserTree::initialize(){
 }   
 
 void LoserTree::pass1(){
-    tempFile->Open(0,"tempFile.bin");
+    tempFile->Open(0,(char*)tempfileName);
     setupPass1(); 
     initialize();
    try{
@@ -171,7 +177,10 @@ void LoserTree::pass2(){
         currentWinner->recordIndex = myTree[res].recordIndex;
         currentWinner->runNumber = myTree[res].runNumber; 
     }
+    tempFile->Close();
+    remove((const char*)tempfileName);
     cleanup(); 
+    // printf("%s\n","pass2 completed");
 }
 
 
@@ -318,9 +327,10 @@ void LoserTree::setupPass1(){
 }
 
 void LoserTree::setupPass2(){
+    // printf("%s\n","setuppass2");
     int numOfruns = 0; 
     int i=0; 
-    tempFile->Open(1,"tempFile.bin");
+    tempFile->Open(1,(char*)tempfileName);
     while(pagesPerRun[i]!=0){
         if(i>0)
             pagesPerRun[i] += pagesPerRun[i-1];

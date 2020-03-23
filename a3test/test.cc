@@ -345,8 +345,26 @@ void q6 () {
 	
 }
 
+void q7(){
+	char *pred_s = "(s_suppkey = s_suppkey)";
+	init_SF_s (pred_s, 100);
+	char *pred_ps = "(ps_suppkey = ps_suppkey)";
+	init_SF_ps (pred_ps, 100);
+	SF_s.Run (dbf_s, _s, cnf_s, lit_s);
+	SF_ps.Run (dbf_ps, _ps, cnf_ps, lit_ps);
+	Join J;
+	Pipe _s_ps (pipesz);
+	CNF cnf_p_ps;
+	Record lit_p_ps;
+	J.Use_n_Pages(100);
+	get_cnf ("(s_suppkey = ps_suppkey)", s->schema(), ps->schema(), cnf_p_ps, lit_p_ps);
+	J.Run (_s, _ps, _s_ps, cnf_p_ps, lit_p_ps);
+	J.WaitUntilDone();
 
-void q7 () { 
+}
+
+
+// void q7 () { 
 /*
 select sum(ps_supplycost)
 from part, supplier, partsupp
@@ -379,8 +397,8 @@ G: same as T but do it over each group identified by ordermaker
 D: stuff only distinct records into the out_pipe discarding duplicates
 W: write out records from in_pipe to a file using out_schema
 */
-	cout << " TBA\n";
-}
+	// cout << " TBA\n";
+// }
 
 void q8 () { 
 /*

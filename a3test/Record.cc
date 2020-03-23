@@ -506,6 +506,14 @@ void Record :: WriteToFile (FILE *targetFile, Schema *mySchema) {
 	fprintf(targetFile, "%c", '\n');
 }
 
+int Record::numberOfAttrbs(){
+	if(bits){
+		return (((int *) bits)[1] / sizeof (int)) -1;
+	}
+	return 0;
+
+}
+
 
 
 

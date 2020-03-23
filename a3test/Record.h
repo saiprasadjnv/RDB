@@ -69,6 +69,7 @@ public:
 	// that the schema also be given so that the record can be interpreted
 	void Print (Schema *mySchema);
 	void WriteToFile(FILE *targetFile, Schema *mySchema);
+	int numberOfAttrbs();
 };
 
 #endif

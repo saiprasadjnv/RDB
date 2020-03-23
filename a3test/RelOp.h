@@ -5,6 +5,7 @@
 #include "DBFile.h"
 #include "Record.h"
 #include "Function.h"
+#include "JoinUtil.h"
 
 class RelationalOp {
 	public:
@@ -54,11 +55,21 @@ class Join : public RelationalOp {
 	private:
 	long bufferSize;
 	pthread_t thread;
+	struct JoinUtilArgs{
+        Pipe *inPipeL;
+        Pipe *inPipeR;
+        Pipe *outPipe;
+        CNF *selOp;
+        Record *literal;
+        long bufferSize;
+        JoinUtil *instance;
+    };
+	typedef void * (*THREADFUNCPTR)(void *); 
 
 	public:
-	void Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal) { }
-	void WaitUntilDone () { }
-	void Use_n_Pages (int n) { }
+	void Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal);
+	void WaitUntilDone ();
+	void Use_n_Pages (int n);
 };
 class DuplicateRemoval : public RelationalOp {
 	private:

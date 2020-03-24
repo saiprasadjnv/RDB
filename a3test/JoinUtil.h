@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Pipe.h"
 #include "Comparison.h"
+#include "ComparisonEngine.h"
 #include "BigQ.h"
 #include "vector"
 #include "Record.h"
@@ -25,10 +26,11 @@ class JoinUtil{
         OrderMaker *leftTableSortOrder;
         OrderMaker *rightTableSortOrder;
         CNF joinCNF;
-        vector<Record> leftVector;
-        vector<Record> rightVector;
+        vector<Record*> leftVector;
+        vector<Record*> rightVector;
         Record* leftTemp;
         Record* rightTemp;
+        ComparisonEngine *ceng;
         
     public:
     JoinUtil();
@@ -37,7 +39,7 @@ class JoinUtil{
     void getNextLeftGroup();
     void getNextRightGroup();
     void performCatesianProduct(int* attsToKeep, int leftNumAttrs,int rightNumAttrs);
-    // void* bigQThread(void* args);
+    void clearVector(vector<Record*> &toClear);
 
 };
 #endif

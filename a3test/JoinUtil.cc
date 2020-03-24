@@ -10,16 +10,17 @@ struct BigQArgs{
             long bufferSize; 
         };
 
+
 JoinUtil::JoinUtil(){
     leftTableSortOrder=new OrderMaker;
     rightTableSortOrder=new OrderMaker;
-    // leftTemp=nullptr;
-    // rightTemp=nullptr;
+    ceng=new ComparisonEngine();
 }
 
 JoinUtil::~JoinUtil(){
 
 }
+
 void* JoinUtil::process(void* args){
     printf("Inside JoinUtil\n");
     JoinUtil *joinUtil=nullptr;
@@ -28,19 +29,14 @@ void* JoinUtil::process(void* args){
     joinUtil->joinCNF=*jArgs->selOp;
     joinUtil->out=jArgs->outPipe;
     int orderMakerRes=joinUtil->joinCNF.GetSortOrders(*joinUtil->leftTableSortOrder,*joinUtil->rightTableSortOrder);
-    // joinUtil->joinCNF.Print();
-    // joinUtil->leftTableSortOrder->Print();
-    // joinUtil->rightTableSortOrder->Print();
     pthread_t leftBigQ;
     pthread_t rightBigQ;
     if(orderMakerRes==0){
         //block-nested join
     }else{
         //Join using bigQ
-        joinUtil->leftTemp=nullptr;
-        joinUtil->rightTemp=nullptr;
-        ComparisonEngine cEng;
-        int *AttstoKeep=new int[41];
+        joinUtil->leftTemp=new Record();
+        joinUtil->rightTemp=new Record();
         joinUtil->leftBigQPipe=new Pipe(100);
         joinUtil->rightBigQPipe=new Pipe(100);
         BigQArgs *leftbigQArgs=new BigQArgs;
@@ -55,74 +51,84 @@ void* JoinUtil::process(void* args){
         rightbigQArgs->outPipe=joinUtil->rightBigQPipe;
         pthread_create(&leftBigQ,NULL,JoinBigQThread,(void*)leftbigQArgs);
         pthread_create(&rightBigQ,NULL,JoinBigQThread,(void*)rightbigQArgs);
-        // printf("INpipe address in JoinUtil file: %ld-%ld\n", jArgs->inPipeL,leftbigQArgs->inPipe);
-        // printf("outpipe address in JoinUtil file: %ld-%ld\n", joinUtil->leftBigQPipe,leftbigQArgs->outPipe);
-        Schema schema1("catalog","supplier");
-        Schema schema2("catalog","partsupp");
-        Record temp1;
-        Record temp2;
-        int leftRes=joinUtil->leftBigQPipe->Remove(&temp1);
-        int rightRes=joinUtil->rightBigQPipe->Remove(&temp2);
+        int leftRes=joinUtil->leftBigQPipe->Remove(joinUtil->leftTemp);
+        int rightRes=joinUtil->rightBigQPipe->Remove(joinUtil->rightTemp);
         if(leftRes==0 || rightRes==0){
             return NULL;
         }
-        int leftNumAttrbs=temp1.numberOfAttrbs();
-        int rightNumAttrbs=temp2.numberOfAttrbs();
+        int leftNumAttrbs=joinUtil->leftTemp->numberOfAttrbs();
+        int rightNumAttrbs=joinUtil->rightTemp->numberOfAttrbs();
+        int *AttstoKeep=new int[leftNumAttrbs+rightNumAttrbs];
         for(int i=0;i<leftNumAttrbs;i++){
             AttstoKeep[i]=i;
         }
-        for(int i=0;i<rightNumAttrbs;i++){
-            AttstoKeep[i]=i;
+        for(int i=leftNumAttrbs;i<leftNumAttrbs+rightNumAttrbs;i++){
+            AttstoKeep[i]=i-leftNumAttrbs;
         }
-        // temp2.Print(&schema2);
-        joinUtil->leftVector.push_back(temp1);
-        joinUtil->rightVector.push_back(temp2);
+        Record *ltmp=new Record();
+        Record *rtmp=new Record();
+        ltmp->Copy(joinUtil->leftTemp);
+        rtmp->Copy(joinUtil->rightTemp);
+        joinUtil->leftVector.push_back(ltmp);
+        joinUtil->rightVector.push_back(rtmp);
+        delete joinUtil->leftTemp, joinUtil->rightTemp;
+        joinUtil->leftTemp=new Record();
+        joinUtil->rightTemp=new Record();
         joinUtil->getNextLeftGroup();
         joinUtil->getNextRightGroup();
-        // joinUtil->leftBigQPipe->Remove(&temp1);
-        // joinUtil->leftVector.back().Print(&schema1);
-        // temp1.Print(&schema1);
+        // int itr=0;
         while(1){
             if(joinUtil->leftVector.size()==0 || joinUtil->rightVector.size()==0){
                 break;
             }
-            int cRes=cEng.Compare(&joinUtil->leftVector.front(),joinUtil->leftTableSortOrder,&joinUtil->rightVector.front(),joinUtil->rightTableSortOrder);
+            int cRes=joinUtil->ceng->Compare(joinUtil->leftVector.front(),joinUtil->leftTableSortOrder,joinUtil->rightVector.front(),joinUtil->rightTableSortOrder);
             if(cRes==0){
-                printf("In compare=0\n");
+                // itr++;
+                // printf("In compare=0, itr:%d\n",itr);
                 joinUtil->performCatesianProduct(AttstoKeep,leftNumAttrbs,rightNumAttrbs);
-                joinUtil->leftVector.clear();
-                joinUtil->leftVector.push_back(*joinUtil->leftTemp);
+                joinUtil->clearVector(joinUtil->leftVector);
+                if(joinUtil->leftTemp!=nullptr && joinUtil->rightTemp!=nullptr){
+                Record *ltmp1=new Record();
+                ltmp1->Copy(joinUtil->leftTemp);
+                joinUtil->leftVector.push_back(ltmp1);
                 joinUtil->getNextLeftGroup();
-                joinUtil->rightVector.clear();
-                joinUtil->rightVector.push_back(*joinUtil->rightTemp);
+                joinUtil->clearVector(joinUtil->rightVector);
+                Record *rtmp1=new Record();
+                rtmp1->Copy(joinUtil->rightTemp);
+                joinUtil->rightVector.push_back(rtmp1);
                 joinUtil->getNextRightGroup();
+                }
+                
 
             }else if(cRes==-1){
-                printf("In compare=-1\n");
-                joinUtil->leftVector.clear();
-                joinUtil->leftVector.push_back(*joinUtil->leftTemp);
+                // itr++;
+                // printf("In compare=-1, itr:%d\n",itr);
+                joinUtil->clearVector(joinUtil->leftVector);
+                Record *ltmp1=new Record();
+                ltmp1->Copy(joinUtil->leftTemp);
+                joinUtil->leftVector.push_back(ltmp1);
                 joinUtil->getNextLeftGroup();
 
             }else if(cRes==1){
-                printf("In compare=1\n");
-                joinUtil->rightVector.clear();
-                joinUtil->rightVector.push_back(*joinUtil->rightTemp);
+                // itr++;
+                // printf("In compare=1, itr:%d\n",itr);
+                joinUtil->clearVector(joinUtil->rightVector);
+                Record *rtmp1=new Record();
+                rtmp1->Copy(joinUtil->rightTemp);
+                joinUtil->rightVector.push_back(rtmp1);
                 joinUtil->getNextRightGroup();
 
             }
-
         }
 
     }
-
+joinUtil->out->ShutDown();
 return NULL;
 
 }
 
 void* JoinBigQThread(void* args){
     BigQArgs* inArgs = (BigQArgs*)args;  
-    // printf("INpipe address in bigQThread file: %ld\n", inArgs->inPipe);
-    // printf("outpipe address in bigQThread file: %ld\n", inArgs->outPipe);
     BigQ bigQ (*inArgs->inPipe, *inArgs->outPipe,*inArgs->sortOrder,inArgs->bufferSize); 
     delete inArgs; 
     return NULL; 
@@ -135,17 +141,18 @@ void JoinUtil::getNextLeftGroup(){
        delete leftTemp;
     }
     leftTemp=new Record();
-    Schema schema("catalog","supplier");
-    printf("leftVector size:%d\n",leftVector.size());
     while(leftBigQPipe->Remove(leftTemp)!=0){
-        leftVector.back().Print(&schema);
-        if(compEng.Compare(&leftVector.back(),leftTemp,leftTableSortOrder)!=0){
-            printf("in getnextleftgroup break\n");
-            break;
+            if(compEng.Compare(leftVector.back(),leftTemp,leftTableSortOrder)!=0){
+                return;
+            }
+            Record *tmp1=new Record();
+            tmp1->Copy(leftTemp);
+            leftVector.push_back(tmp1);
+            delete leftTemp;
+            leftTemp=new Record();
         }
-        leftVector.push_back(*leftTemp);
-    }
-
+        delete leftTemp;
+        leftTemp=nullptr;
 }
 void JoinUtil::getNextRightGroup(){
     ComparisonEngine compEng;
@@ -153,24 +160,31 @@ void JoinUtil::getNextRightGroup(){
         delete rightTemp;
     }
     rightTemp=new Record();
-    Schema schema("catalog","partsupp");
-    printf("rightVector size:%d\n",rightVector.size());
     while(rightBigQPipe->Remove(rightTemp)!=0){
-        // rightVector.back().Print(&schema);
-        if(compEng.Compare(&rightVector.back(),rightTemp,rightTableSortOrder)!=0){
-            break;
+            if(compEng.Compare(rightVector.back(),rightTemp,rightTableSortOrder)!=0){
+                // break;
+                return;
+            }
+            Record *tmp=new Record();
+            tmp->Copy(rightTemp);
+            rightVector.push_back(tmp);
         }
-        rightVector.push_back(*rightTemp);
-    }
-
+        delete rightTemp;
+        rightTemp=nullptr;
 }
 void JoinUtil::performCatesianProduct(int* attsToKeep, int leftNumAttrs,int rightNumAttrs){
     for(int i=0;i<leftVector.size();i++){
         for(int j=0;j<rightVector.size();j++){
             Record temp;
-            temp.MergeRecords(&leftVector[i],&rightVector[j],leftNumAttrs,rightNumAttrs,attsToKeep,leftNumAttrs+rightNumAttrs,leftNumAttrs);
+            temp.MergeRecords(leftVector[i],rightVector[j],leftNumAttrs,rightNumAttrs,attsToKeep,leftNumAttrs+rightNumAttrs,leftNumAttrs);
             out->Insert(&temp);
         }
-    }
+    }   
+}
 
+void JoinUtil::clearVector(vector<Record*> &toClear){
+    for(int i=0;i<toClear.size();i++){
+        delete toClear[i];
+    }
+    toClear.clear();
 }

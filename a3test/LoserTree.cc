@@ -180,7 +180,6 @@ void LoserTree::pass2(){
     tempFile->Close();
     remove((const char*)tempfileName);
     cleanup(); 
-    // printf("%s\n","pass2 completed");
 }
 
 
@@ -327,7 +326,6 @@ void LoserTree::setupPass1(){
 }
 
 void LoserTree::setupPass2(){
-    // printf("%s\n","setuppass2");
     int numOfruns = 0; 
     int i=0; 
     tempFile->Open(1,(char*)tempfileName);

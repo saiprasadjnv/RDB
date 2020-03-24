@@ -14,10 +14,6 @@ void Join::Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record 
     jArgs->bufferSize=bufferSize;
     jArgs->instance=joinUtil;
     pthread_create(&thread,NULL,(THREADFUNCPTR)&JoinUtil::process,(void*)jArgs);
-    // printf("INpipe address in Join file: %ld-%ld\n", jArgs->inPipeL,jArgs->inPipeR);
-    // printf("outpipe address in JoinUtil file: %ld-%ld\n", &joinUtil->leftBigQPipe,leftbigQArgs->outPipe);
-
-
 }
 void Join::WaitUntilDone (){
     pthread_join(thread,NULL);

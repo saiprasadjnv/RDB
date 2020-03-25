@@ -66,13 +66,16 @@ void *DuplicateRemovalThread(void* myargs){
             // printf("exiting from if2: %d ", i++);
             continue; 
         }
-        rec1->Print(inArgs->mySchema);
+        // rec1->Print(inArgs->mySchema);
         inArgs->outPipe->Insert(rec1); 
         delete rec1; 
         rec1 = new Record; 
         rec1->Consume(temp); 
         delete temp;  
         temp = new Record; 
+    }
+    if(rec1!=nullptr){
+        inArgs->outPipe->Insert(rec1); 
     }
     delete temp; 
     delete rec1; 
@@ -96,7 +99,7 @@ void DuplicateRemoval::Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema) {
     inArgs->outPipe = &outPipe;
     inArgs->mySchema = &mySchema;
     inArgs->bufferSize = bufferSize;
-    printf("run len in dup run : %ld , class level: %ld\n", inArgs->bufferSize,bufferSize); 
+    // printf("run len in dup run : %ld , class level: %ld\n", inArgs->bufferSize,bufferSize); 
     pthread_create(&thread,NULL, DuplicateRemovalThread, (void*)inArgs); 
 }
 
@@ -105,9 +108,9 @@ void DuplicateRemoval::WaitUntilDone () {
 }
 
 void DuplicateRemoval::Use_n_Pages (int runlen) {
-    printf("%d runlen in use_n\n", runlen);
+    // printf("%d runlen in use_n\n", runlen);
     bufferSize = runlen; 
-    printf("%ld  buffsize in use_n\n", bufferSize);
+    // printf("%ld  buffsize in use_n\n", bufferSize);
 }
 
 DuplicateRemoval::DuplicateRemoval(){ 

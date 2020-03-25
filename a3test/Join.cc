@@ -2,6 +2,9 @@
 #include "pthread.h"
 #include "JoinUtil.h"
 
+Join::Join(){
+    bufferSize=8;
+}
 
 void Join::Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal){
     JoinUtil *joinUtil=new JoinUtil();
@@ -21,5 +24,4 @@ void Join::WaitUntilDone (){
 }
 void Join::Use_n_Pages (int n){
     bufferSize=n;
-
 }

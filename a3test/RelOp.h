@@ -70,6 +70,7 @@ class Join : public RelationalOp {
 	void Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal);
 	void WaitUntilDone ();
 	void Use_n_Pages (int n);
+	Join();
 };
 class DuplicateRemoval : public RelationalOp {
 	private:

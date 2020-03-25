@@ -9,9 +9,16 @@ struct BigQArgs{
             OrderMaker* sortOrder; 
             long bufferSize; 
         };
+// Attribute IA1 = {"int", Int};
+// Attribute SA1 = {"string", String};
+// Attribute DA1 = {"double", Double};
+// Attribute s_nationkey = {"s_nationkey", Int};
+// Attribute ps_supplycost = {"ps_supplycost", Double};
+// Attribute joinatt[] = {IA1, SA1, SA1, s_nationkey,SA1, DA1, SA1, IA1, IA1, IA1, ps_supplycost,SA1};
+// Schema join_sch ("join_sch", 12, joinatt);
+// int cnt=0;
 
-
-JoinUtil::JoinUtil(){
+JoinUtil::JoinUtil(){ 
     leftTableSortOrder=new OrderMaker;
     rightTableSortOrder=new OrderMaker;
     ceng=new ComparisonEngine();
@@ -22,7 +29,7 @@ JoinUtil::~JoinUtil(){
 }
 
 void* JoinUtil::process(void* args){
-    printf("Inside JoinUtil\n");
+    // printf("Inside JoinUtil\n");
     JoinUtil *joinUtil=nullptr;
     JoinUtilArgs *jArgs=(JoinUtilArgs*)args;
     joinUtil=jArgs->instance;
@@ -76,16 +83,17 @@ void* JoinUtil::process(void* args){
         joinUtil->rightTemp=new Record();
         joinUtil->getNextLeftGroup();
         joinUtil->getNextRightGroup();
-        // int itr=0;
+        int itr=0;
         while(1){
             if(joinUtil->leftVector.size()==0 || joinUtil->rightVector.size()==0){
                 break;
             }
             int cRes=joinUtil->ceng->Compare(joinUtil->leftVector.front(),joinUtil->leftTableSortOrder,joinUtil->rightVector.front(),joinUtil->rightTableSortOrder);
             if(cRes==0){
-                // itr++;
+                itr++;
                 // printf("In compare=0, itr:%d\n",itr);
                 joinUtil->performCatesianProduct(AttstoKeep,leftNumAttrbs,rightNumAttrbs);
+                // printf("Inside join: %d", cnt);
                 joinUtil->clearVector(joinUtil->leftVector);
                 if(joinUtil->leftTemp!=nullptr && joinUtil->rightTemp!=nullptr){
                 Record *ltmp1=new Record();
@@ -101,27 +109,32 @@ void* JoinUtil::process(void* args){
                 
 
             }else if(cRes==-1){
-                // itr++;
+                itr++;
                 // printf("In compare=-1, itr:%d\n",itr);
                 joinUtil->clearVector(joinUtil->leftVector);
+                if(joinUtil->leftTemp!=nullptr){
                 Record *ltmp1=new Record();
                 ltmp1->Copy(joinUtil->leftTemp);
                 joinUtil->leftVector.push_back(ltmp1);
                 joinUtil->getNextLeftGroup();
+                }
 
             }else if(cRes==1){
-                // itr++;
+                itr++;
                 // printf("In compare=1, itr:%d\n",itr);
                 joinUtil->clearVector(joinUtil->rightVector);
+                if(joinUtil->rightTemp!=nullptr){
                 Record *rtmp1=new Record();
                 rtmp1->Copy(joinUtil->rightTemp);
                 joinUtil->rightVector.push_back(rtmp1);
                 joinUtil->getNextRightGroup();
+                }
 
             }
         }
 
     }
+    // printf("In joinUtil before out pipe shutdown\n");
 joinUtil->out->ShutDown();
 return NULL;
 
@@ -176,10 +189,17 @@ void JoinUtil::performCatesianProduct(int* attsToKeep, int leftNumAttrs,int righ
     for(int i=0;i<leftVector.size();i++){
         for(int j=0;j<rightVector.size();j++){
             Record temp;
+            // Schema sch1("catalog","supplier");
+            // Schema sch2("catalog","partsupp");
+            // leftVector[i]->Print(&sch1);
+            // rightVector[i]->Print(&sch2);
             temp.MergeRecords(leftVector[i],rightVector[j],leftNumAttrs,rightNumAttrs,attsToKeep,leftNumAttrs+rightNumAttrs,leftNumAttrs);
+            // printf("Inserted into out pipe\n");
+            // temp.Print(&join_sch);
+            // ++cnt;
             out->Insert(&temp);
         }
-    }   
+    }       
 }
 
 void JoinUtil::clearVector(vector<Record*> &toClear){

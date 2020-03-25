@@ -4,6 +4,7 @@
 #include "stdlib.h"
 #include <cstdio>
 #include <cstring>
+int cn1=0;
 LoserTree::LoserTree(Pipe &input, Pipe &output, long runlength, OrderMaker &sortOrder){
     runLen = runlength * 600;
     treeSize = runLen -1; 
@@ -21,6 +22,7 @@ LoserTree::LoserTree(Pipe &input, Pipe &output, long runlength, OrderMaker &sort
     out= &output;
     sortorder = &sortOrder;
     tempfileName=new char[100];
+    currRunNumber=0;
     strcpy(tempfileName,(("tempFile_"+to_string((int) rand())+".bin").c_str()));
     for(int i=0; i< INTERNALNODES(treeSize); i++){
         myTree[i].recordIndex = -1; 
@@ -73,6 +75,8 @@ void LoserTree::initialize(){
 }   
 
 void LoserTree::pass1(){
+    // printf("setup pass1 started: %ld\n",this);
+    // sortorder->Print();
     tempFile->Open(0,(char*)tempfileName);
     setupPass1(); 
     initialize();
@@ -87,6 +91,7 @@ void LoserTree::pass1(){
             if(currentWinner->recordIndex!=-1){
                 currWinnerRecord=records[currentWinner->recordIndex];
                 temporaryWinnerRecord.Copy(currWinnerRecord);
+                cn1++;
                 Add(*currWinnerRecord);
                 Record temp;
                     int resForPipeRetreival=in->Remove(&temp);
@@ -117,10 +122,11 @@ void LoserTree::pass1(){
    }catch(exception ex){
        ex.what();
    }
+//    printf("setup pass1 completed: %ld\n",this);
 }
 
 void LoserTree::pass2(){
-    int winnerIndex; 
+    long winnerIndex; 
     long res;
     int currentBuffer[150];  
     Record temp; 
@@ -177,6 +183,7 @@ void LoserTree::pass2(){
         currentWinner->recordIndex = myTree[res].recordIndex;
         currentWinner->runNumber = myTree[res].runNumber; 
     }
+    // printf("setup pass2 completed: %ld\n",this);
     tempFile->Close();
     remove((const char*)tempfileName);
     cleanup(); 
@@ -281,6 +288,11 @@ int LoserTree::Add (Record &rec) {
             tempFile->AddPage(tempPage, whichPage);
             whichPage++;
             pagesPerRun[currRunNumber]++;
+            // // Attribute IA = {"test", Int};
+            // // Schema sch1("test", 1, &IA);
+            // printf("records count:%d\n",cn1);
+            // delete tempPage; 
+            // tempPage = new Page; 
             tempPage->EmptyItOut();
             tempPage->Append(&rec);         
         }
@@ -292,7 +304,7 @@ int LoserTree::Add (Record &rec) {
 int LoserTree::writeDirtyPage(){
         tempFile->AddPage(tempPage, whichPage);
         whichPage++;
-        printf("Current run number: %d \n", currRunNumber);
+        // printf("Current run number: %d \n", currRunNumber);
         pagesPerRun[currRunNumber]++;
         tempPage->EmptyItOut();
         numRecsInRun=0;
@@ -372,5 +384,6 @@ void LoserTree::cleanup(){
     treeSize=0; 
     currRunNumber=0;
     delete[] records;
+    // printf("recIndx:%d - %ld\n",myTree[0].recordIndex,this);
     delete[] myTree;
 }

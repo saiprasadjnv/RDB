@@ -293,8 +293,10 @@ void q6 () {
 			func.Print ();
 			// OrderMaker grp_order (&join_sch);
 			OrderMaker grp_order;
-			int *AttstoKeep=new int{3};
-			Type *attType=new Type{Int};
+			int *AttstoKeep=new int[1];
+			AttstoKeep[0]=3;
+			Type *attType=new Type[1];
+			attType[0]=Int;
 			grp_order.setAttributes(AttstoKeep,attType,1);
 
 	G.Use_n_Pages (8);

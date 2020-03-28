@@ -86,8 +86,8 @@ void* JoinUtil::process(void* args){
             joinUtil->rightTemp=new Record();
             tempFile.Close();
         }while(jArgs->inPipeR->Remove(joinUtil->rightTemp)!=0);
-
         remove(tempfileName);
+        remove(strcat(tempfileName,".meta"));
     }else{
         //Join using bigQ
         joinUtil->leftTemp=new Record();

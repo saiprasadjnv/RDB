@@ -21,9 +21,6 @@ int SortedFileHandler::readHandler(File *file,Page &curPage,off_t &whichPage,int
 		mergeNewRecords(*file,outputPipe);
 		file->Open(1,f_path);
         currentState='r';
-		whichPage=0,currentReadPage=0;
-		curPage.EmptyItOut();
-		file->GetPage(&curPage,whichPage);
         return 1;
     }
     return 0;
@@ -55,7 +52,6 @@ int SortedFileHandler::writeHandler(File &file,Page &curPage,off_t &whichPage){
 */
 int SortedFileHandler::tearDown(File &file,Page &curPage,off_t &whichPage){
     int status=readHandler(&file,curPage,whichPage,0);
-	curPage.EmptyItOut();
     return status;
 
 }
@@ -88,20 +84,12 @@ int SortedFileHandler::init(Page &curPage,off_t &whichPage,int &currentRecord){
     return 1;
 }
 
-/*
-Method used to create the bigQ thread.
-*/
 void* SortedFileHandler::bigq(void * arg){
 	bigQArgs *bigqArgs=(bigQArgs*)arg; 
 	BigQ bigq(*bigqArgs->inputPipe,*bigqArgs->outputPipe,bigqArgs->sortedOrder,bigqArgs->runlen);
 	return NULL;
 }
 
-/*
-Merges the records from the output pipe generated after sort routine with the current dbfile to a single
-combined sorted dbfile. It uses intermediate files to merge and renames it to the desired file after
-merge completes. The merge is performed by using single file active at any given time approach. 
-*/
 void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 	Record *temp1=new Record;
 	Record *temp2=new Record;
@@ -175,10 +163,7 @@ void SortedFileHandler::mergeNewRecords(File &file,Pipe *outputPipe){
 
 }
 
-/*
- Retrieves the next record from the page and stores it in rec parameter. If there are no records in 
- the currPage, it retrieves the next page from the given file. Returns 1 in case of success, otherwise 0.
-*/
+
 int SortedFileHandler::GetRecord(Page &currPage, off_t &pageNum ,char *f_path, Record &rec){
 	if(currPage.GetFirst(&rec)==0){
 		File *file = new File(); 
@@ -205,10 +190,7 @@ int SortedFileHandler::GetRecord(Page &currPage, off_t &pageNum ,char *f_path, R
 	return 0;
 }
 
-/*
-Adds record to the given currPage and if full it writes the page into the given file ( f_path).
-Returns 1 in case of success.
-*/
+
 int SortedFileHandler::AddRecord(Page &currPage, off_t &pageNum ,char *f_path, Record &rec){
 	if(currPage.Append(&rec)==0){
 		File *file = new File();
@@ -223,9 +205,6 @@ int SortedFileHandler::AddRecord(Page &currPage, off_t &pageNum ,char *f_path, R
 	return 1; 
 }
 
-/*
-Adds page to the given file (f_path);
-*/
 void SortedFileHandler::AddPage(Page &currPage, off_t &pageNum, char* f_path){
 	File *file = new File();
 	file->Open(1, f_path); 

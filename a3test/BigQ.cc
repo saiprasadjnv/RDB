@@ -12,7 +12,7 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, long runlen) {
 		exit(0);
 	}
 	pthread_join(sortingThread, NULL); 
-	remove("tempFile.bin");
+	// remove("tempFile.bin");
 	out.ShutDown ();
 	delete myLoserTree;
 }

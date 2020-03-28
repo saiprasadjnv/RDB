@@ -27,6 +27,8 @@ HeapFile::~HeapFile(){
     delete handler;
     delete myHeapFile;
     delete currPage;
+    // myHeapFile->Close();
+    Close();
 }
 /* 
  * Method that creates a new file based on the ftype provided. 
@@ -55,7 +57,7 @@ void HeapFile::Load (Schema &f_schema, const char *loadpath) {
 * Method to open the given filepath(f_path) in read/write mode.
 */
 int HeapFile::Open (const char *f_path) {
-    myHeapFile->Close();
+    // myHeapFile->Close();
     myHeapFile->Open(1, (char *) f_path);
     handler->init(*currPage,whichPage,currRecord);
     return 1;
@@ -137,9 +139,6 @@ int HeapFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
     return 1; 
 }
 
-/*
-Creates and writes the metadata info of the current file to a new metadata file for future use.
-*/
 void HeapFile::AddMetadata(const char *fpath,void *startup){
     char filePath[100];
     sprintf(filePath,"%s.meta",fpath);

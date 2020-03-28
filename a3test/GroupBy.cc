@@ -57,12 +57,8 @@ void* GroupByThread(void* myargs){
         mergeOrder[i+1] = sortAttributes[i]; 
     }
     Schema mySchema ("catalog", "supplier");
-    // printf("waiting for bigQ remove in groupby\n");
-    // int i=0;
-    // inArgs->groupAtts->Print();
     while (bigQPipe->Remove(temp))
     { 
-        // printf("elments removed so far: %d\n",++i);
       
         if (rec1 == nullptr)
         {
@@ -79,7 +75,6 @@ void* GroupByThread(void* myargs){
         else{
             finalDoubleRes += doubleRes; 
         }
-        printf("res comp:%d\n",ceng.Compare(rec1,temp,inArgs->groupAtts));
         if(ceng.Compare(rec1,temp,inArgs->groupAtts)!=0){
             if(res==Int){
                 string  intRes = to_string(finalIntRes); 
@@ -88,8 +83,8 @@ void* GroupByThread(void* myargs){
                 Record resultint; 
                 resultint.ComposeRecord(&sum_sch_int, (const char*)result);
                 finalRecord->MergeRecords(&resultint, rec1, 1, numAttsinSort, mergeOrder, 1+numAttsinSort, 1);
-                Attribute atts1[2] = {IA, IA}; 
-                Schema sum_sch1 ("sum_sch1", 2, atts1);
+                // Attribute atts1[2] = {IA, IA}; 
+                // Schema sum_sch1 ("sum_sch1", 2, atts1);
                 // finalRecord->Print(&sum_sch1);
                 inArgs->outPipe->Insert(finalRecord); 
                 finalIntRes = 0; 
@@ -105,8 +100,8 @@ void* GroupByThread(void* myargs){
                 Record resultDouble; 
                 resultDouble.ComposeRecord(&sum_sch_double, (const char*)result);
                 finalRecord->MergeRecords(&resultDouble, rec1, 1, numAttsinSort, mergeOrder, 1+numAttsinSort, 1);
-                Attribute atts1[2] = {DA, IA}; 
-                Schema sum_sch1 ("sum_sch1", 2, atts1);
+                // Attribute atts1[2] = {DA, IA}; 
+                // Schema sum_sch1 ("sum_sch1", 2, atts1);
                 // finalRecord->Print(&sum_sch1);
                 inArgs->outPipe->Insert(finalRecord); 
                 finalDoubleRes = 0.0; 

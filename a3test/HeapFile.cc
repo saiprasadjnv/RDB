@@ -57,7 +57,7 @@ void HeapFile::Load (Schema &f_schema, const char *loadpath) {
 * Method to open the given filepath(f_path) in read/write mode.
 */
 int HeapFile::Open (const char *f_path) {
-    myHeapFile->Close();
+    // myHeapFile->Close();
     myHeapFile->Open(1, (char *) f_path);
     handler->init(*currPage,whichPage,currRecord);
     return 1;

@@ -2,6 +2,7 @@
 #include <limits.h>
 #include "File.h"
 #include "Pipe.h"
+#include "vector"
 
 #define PARENT(i) ((i-1)/2) 
 #define INTERNALNODES(num) ((num+1)/2 -1) 
@@ -10,6 +11,8 @@
 class LoserTree{
 private:
   char* tempfileName; 
+  vector<long> pagesPerRunVector;
+
 
 public:
   struct LoserNode{
@@ -29,7 +32,6 @@ public:
     Page **pageBuffers;
     off_t whichPage;
     LoserNode *myTree;
-    long *pagesPerRun;
     Schema *mySchema; 
     LoserNode *currentWinner;
     Record *currWinnerRecord; 

@@ -32,7 +32,14 @@ int main(int argc, char *argv[]){
     filePath[0]=0;
     sprintf(fname,"%spart.bin",dbfile_dir);
     sprintf(filePath,"%spart.tbl",tpch_dir);
-     Schema schema2("catalog","part");
+    Schema schema2("catalog","part");
     loadHeapBinFile(fname,filePath,schema2);
+    fname[0]=0;
+    filePath[0]=0;
+    sprintf(fname,"%snation.bin","");
+    sprintf(filePath,"%snation.tbl","");
+    Schema schema3("catalog","nation");
+    loadHeapBinFile(fname,filePath,schema3);
+
     
 }

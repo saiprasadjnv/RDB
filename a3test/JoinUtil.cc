@@ -25,7 +25,9 @@ JoinUtil::JoinUtil(){
 }
 
 JoinUtil::~JoinUtil(){
-
+    delete leftTemp,rightTemp;
+    delete leftTableSortOrder,rightTableSortOrder;
+    delete leftBigQPipe,rightBigQPipe;
 }
 
 void* JoinUtil::process(void* args){
@@ -136,6 +138,9 @@ void* JoinUtil::process(void* args){
     }
     // printf("In joinUtil before out pipe shutdown\n");
 joinUtil->out->ShutDown();
+joinUtil->clearVector(joinUtil->leftVector);
+joinUtil->clearVector(joinUtil->rightVector);
+delete jArgs;
 return NULL;
 
 }

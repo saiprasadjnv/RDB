@@ -5,13 +5,12 @@
 #include <cstdio>
 #include <cstring>
 int cn1=0;
-LoserTree::LoserTree(Pipe &input, Pipe &output, long runlength, OrderMaker &sortOrder){
+LoserTree::LoserTree(Pipe &input, Pipe &output, long runlength, OrderMaker &sortOrder){ 
     runLen = runlength * 600;
     treeSize = runLen -1; 
     myTree = new LoserNode[treeSize]; 
     records = new Record*[treeSize - INTERNALNODES(treeSize)];
-    mySchema = new Schema("catalog", "customer");
-    pagesPerRun = new long[150]; 
+    // mySchema = new Schema("catalog", "customer");
     tempFile = new File;
     tempPage = new Page;  
     whichPage =0; 
@@ -33,27 +32,21 @@ LoserTree::LoserTree(Pipe &input, Pipe &output, long runlength, OrderMaker &sort
         myTree[i].recordIndex = i - INTERNALNODES(treeSize); 
         myTree[i].runNumber = LONG_MAX; 
     }
-    //Initialize pagesPerRun
-    for(int i=0; i<150; i++){
-        pagesPerRun[i] = 0; 
-    }
     for(int i=0;i<(treeSize-(INTERNALNODES(treeSize)));i++){
         myTree[TREENODEINDEX(i)].runNumber = LONG_MAX;
         records[i]=nullptr;
-
     }
 }
 
-LoserTree::~LoserTree(){
-    delete[] pagesPerRun; 
-    delete mySchema; 
+LoserTree::~LoserTree(){ 
+    // delete mySchema; 
     tempFile->Close();
     delete tempPage;
     delete tempFile;
-    delete[] pageBuffers;
+    // delete[] pageBuffers;
     delete currentWinner;
     delete[] tempfileName;
-    // remove((const char*)tempfileName);
+    pagesPerRunVector.clear();
 }
 
 
@@ -76,7 +69,6 @@ void LoserTree::initialize(){
 
 void LoserTree::pass1(){
     // printf("setup pass1 started: %ld\n",this);
-    // sortorder->Print();
     tempFile->Open(0,(char*)tempfileName);
     setupPass1(); 
     initialize();
@@ -122,20 +114,20 @@ void LoserTree::pass1(){
    }catch(exception ex){
        ex.what();
    }
-//    printf("setup pass1 completed: %ld\n",this);
 }
 
 void LoserTree::pass2(){
     long winnerIndex; 
     long res;
-    int currentBuffer[150];  
+    long vectorSize=pagesPerRunVector.size();
+    long currentBuffer[vectorSize];  
     Record temp; 
     setupPass2(); 
     initialize(); 
     int maxPages = tempFile->GetLength() - 1;
     currentBuffer[0]=0; 
-    for(int i=1; i<150; i++){
-        currentBuffer[i] = pagesPerRun[i-1]; 
+    for(int i=1; i<vectorSize; i++){
+        currentBuffer[i] = pagesPerRunVector[i-1]; 
     }    
     while(1){
         winnerIndex = currentWinner->recordIndex;
@@ -146,7 +138,7 @@ void LoserTree::pass2(){
         int result = pageBuffers[winnerIndex]->GetFirst(&temp); 
         if(result==0){
             currentBuffer[winnerIndex]++;
-            if(currentBuffer[winnerIndex] == pagesPerRun[winnerIndex])
+            if(currentBuffer[winnerIndex] == pagesPerRunVector[winnerIndex])
             {
                 pageBuffers[winnerIndex]->EmptyItOut();
                 delete records[winnerIndex]; 
@@ -183,9 +175,9 @@ void LoserTree::pass2(){
         currentWinner->recordIndex = myTree[res].recordIndex;
         currentWinner->runNumber = myTree[res].runNumber; 
     }
-    // printf("setup pass2 completed: %ld\n",this);
     tempFile->Close();
     remove((const char*)tempfileName);
+    delete[] pageBuffers;
     cleanup(); 
 }
 
@@ -287,12 +279,11 @@ int LoserTree::Add (Record &rec) {
      if(tempPage->Append(&rec)==0){
             tempFile->AddPage(tempPage, whichPage);
             whichPage++;
-            pagesPerRun[currRunNumber]++;
-            // // Attribute IA = {"test", Int};
-            // // Schema sch1("test", 1, &IA);
-            // printf("records count:%d\n",cn1);
-            // delete tempPage; 
-            // tempPage = new Page; 
+            if(currRunNumber>=pagesPerRunVector.size()){
+                pagesPerRunVector.push_back(1);
+            }else{
+                pagesPerRunVector[currRunNumber]++;
+            }
             tempPage->EmptyItOut();
             tempPage->Append(&rec);         
         }
@@ -305,7 +296,11 @@ int LoserTree::writeDirtyPage(){
         tempFile->AddPage(tempPage, whichPage);
         whichPage++;
         // printf("Current run number: %d \n", currRunNumber);
-        pagesPerRun[currRunNumber]++;
+        if(currRunNumber>=pagesPerRunVector.size()){
+            pagesPerRunVector.push_back(1);
+        }else{
+            pagesPerRunVector[currRunNumber]++;
+        }
         tempPage->EmptyItOut();
         numRecsInRun=0;
     return 1;
@@ -338,14 +333,12 @@ void LoserTree::setupPass1(){
 }
 
 void LoserTree::setupPass2(){
-    int numOfruns = 0; 
-    int i=0; 
+    long numOfruns = 1; 
+    long i=0; 
     tempFile->Open(1,(char*)tempfileName);
-    while(pagesPerRun[i]!=0){
-        if(i>0)
-            pagesPerRun[i] += pagesPerRun[i-1];
-        numOfruns++;
-        i++;
+    for(long i=1;i<pagesPerRunVector.size();i++){
+            pagesPerRunVector[i]+=pagesPerRunVector[i-1];
+            numOfruns++;
     }
     treeSize = (numOfruns *2) -1; 
     myTree = new LoserNode[treeSize]; 
@@ -358,9 +351,9 @@ void LoserTree::setupPass2(){
     for(i=0; i< numOfruns; i++){
         myTree[TREENODEINDEX(i)].recordIndex = i;
         pageBuffers[i] = new Page;
-        records[i] = new Record; 
+        records[i] = new Record;  
         if(i>0){
-            tempFile->GetPage(pageBuffers[i],pagesPerRun[i-1]); 
+            tempFile->GetPage(pageBuffers[i],pagesPerRunVector[i-1]); 
         }
         else
         {

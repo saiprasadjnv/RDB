@@ -1,5 +1,8 @@
 #include "JoinUtil.h"
 #include <iostream>
+#include "DBFile.h"
+#include <cstring>
+#include "string.h"
 using namespace std;
 
 void* JoinBigQThread(void* args);
@@ -40,8 +43,51 @@ void* JoinUtil::process(void* args){
     int orderMakerRes=joinUtil->joinCNF.GetSortOrders(*joinUtil->leftTableSortOrder,*joinUtil->rightTableSortOrder);
     pthread_t leftBigQ;
     pthread_t rightBigQ;
+    char tempfileName[100];
+    strcpy(tempfileName,(("tempFile_Join_"+to_string((int) rand())+".bin").c_str()));
     if(orderMakerRes==0){
         //block-nested join
+        joinUtil->leftTemp=new Record();
+        joinUtil->rightTemp=new Record();
+        int leftRes=jArgs->inPipeL->Remove(joinUtil->leftTemp);
+        int rightRes=jArgs->inPipeR->Remove(joinUtil->rightTemp);
+        if(leftRes==0 || rightRes==0){
+            return NULL;
+        }
+        int leftNumAttrbs=joinUtil->leftTemp->numberOfAttrbs();
+        int rightNumAttrbs=joinUtil->rightTemp->numberOfAttrbs();
+        int *AttstoKeep=new int[leftNumAttrbs+rightNumAttrbs];
+        for(int i=0;i<leftNumAttrbs;i++){
+            AttstoKeep[i]=i;
+        }
+        for(int i=leftNumAttrbs;i<leftNumAttrbs+rightNumAttrbs;i++){
+            AttstoKeep[i]=i-leftNumAttrbs;
+        }
+        DBFile tempFile;
+        tempFile.Create(tempfileName,heap,NULL);
+        do{
+            tempFile.Add(*joinUtil->leftTemp);
+            delete joinUtil->leftTemp;
+            joinUtil->leftTemp=new Record();
+        }while(jArgs->inPipeL->Remove(joinUtil->leftTemp)!=0);
+        tempFile.Close(); 
+        do{
+            tempFile.Open(tempfileName);
+            tempFile.MoveFirst();
+            Record tmp3;
+            while(tempFile.GetNext(tmp3)!=0){
+                if(joinUtil->ceng->Compare(&tmp3,joinUtil->rightTemp,jArgs->literal,&joinUtil->joinCNF)!=0){
+                    Record tmp4;
+                    tmp4.MergeRecords(&tmp3,joinUtil->rightTemp,leftNumAttrbs,rightNumAttrbs,AttstoKeep,leftNumAttrbs+rightNumAttrbs,leftNumAttrbs);
+                    joinUtil->out->Insert(&tmp4);
+                }
+            }
+            delete joinUtil->rightTemp;
+            joinUtil->rightTemp=new Record();
+            tempFile.Close();
+        }while(jArgs->inPipeR->Remove(joinUtil->rightTemp)!=0);
+
+        remove(tempfileName);
     }else{
         //Join using bigQ
         joinUtil->leftTemp=new Record();

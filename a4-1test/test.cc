@@ -1,4 +1,4 @@
-#include "y.tab.h"
+// #include "y.tab.h"
 #include <iostream>
 #include <stdlib.h>
 #include "Statistics.h"
@@ -383,8 +383,8 @@ void q6 (){
 	yy_scan_string(cnf);
 	yyparse();
 	s.Apply(final, relName, 2);
-	
-	cnf = " (s_nationkey = n_nationkey)  AND (n_name = 'AMERICA')   ";
+	s.PrintStatistics();
+	cnf = " (s_nationkey = n_nationkey)  AND (n_name = 'AMERICA') AND (s_suppkey = ps_suppkey)   ";
 	yy_scan_string(cnf);
 	yyparse();
 

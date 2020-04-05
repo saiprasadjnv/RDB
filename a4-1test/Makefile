@@ -32,6 +32,8 @@ reloptest: $(classes) RelOpTest.o
 RelOpTest.o: RelOpTest.cc
 	$(CC) -g -c RelOpTest.cc
 
+Statistics.o: Statistics.cc
+	$(CC) -g -c Statistics.cc
 test.o: test.cc
 	$(CC) -g -c test.cc
 	

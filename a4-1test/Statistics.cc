@@ -1,5 +1,6 @@
 #include "Statistics.h"
 #include <iostream>
+#include <cmath>
 using namespace std; 
 
 
@@ -84,6 +85,7 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
     //     printf("select operations \n"); 
     // }
     long numOfTuples = getNumOfTuples(partitions); 
+    cout << numOfTuples; 
     // printf(" Total number of tuples after cross product = %ld \n", numOfTuples);  
     long interNumOfTuples = numOfTuples;  
     struct AndList* currParsing = parseTree; 
@@ -97,7 +99,7 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
         interNumOfTuples *= fract; 
     }
     cout << "\n"; 
-    return min<long>(numOfTuples, numOfTuples* fract); 
+    return min<double>(numOfTuples, numOfTuples* fract); 
 }
 
 void Statistics::PrintStatistics(){
@@ -241,10 +243,10 @@ int Statistics::checkAndGetAttVal(vector <vector <char*> > &partitions, char* at
     // PrintStatistics();
     // string  str=attName;
     for(int i=0; i<partitions.size(); i++){
+        cout << "looking in relation " << partitions[i][0] << " for " << attName <<"1\n"; 
         if(StatisticsTable.find(partitions[i]) != StatisticsTable.end() && \
             StatisticsTable[partitions[i]].find(attName)!= StatisticsTable[partitions[i]].end()){
            printf("Printing  : %ld\n", StatisticsTable[partitions[i]][attName]);// << " for " << attName <<"\n";
-        cout << "looking in relation " << partitions[i][0] << " for " << attName <<"1\n"; 
         //    printf("Printing1  : %ld\n", StatisticsTable[partitions[i]][(char*)str.c_str()]);// << " for " << attName <<"\n";
             val = StatisticsTable[partitions[i]][attName]; 
             break;

@@ -174,12 +174,12 @@ double Statistics::processOrlist(long numOfinputTuples, struct OrList* myOrlist,
         struct ComparisonOp* temp = currOp->left; 
         if(temp->left->code == NAME){
             if(temp->right->code != NAME){
-                long val = checkAndGetAttVal(partitions, temp->left->value); 
-                if(val==-2){
-                    cerr << "Invalid CNF for !!"<<temp->left->value<<"\n"; 
-                    exit(0); 
-                }
                 if(temp->code == EQUALS){
+                    long val = checkAndGetAttVal(partitions, temp->left->value); 
+                    if(val==-2){
+                        cerr << "Invalid CNF for !!"<<temp->left->value<<"\n"; 
+                        exit(0); 
+                    }
                     cout << val << " ," << 1.0/(double)val << "\n"; 
                     parsedOrList[temp->left->value].push_back(1.0/(double)val); 
                 }else{
@@ -187,14 +187,14 @@ double Statistics::processOrlist(long numOfinputTuples, struct OrList* myOrlist,
                 }
 
             }else{
-                long leftVal = checkAndGetAttVal(partitions, temp->left->value);
-                long rightVal = checkAndGetAttVal(partitions, temp->right->value); 
-                if(leftVal==-2 || rightVal==-2){
-                    cerr << "Invalid CNF!! for "<<temp->left->value <<"-"<<temp->right->value<<"\n"; 
-                    exit(0); 
-                }
                 if(temp->code == EQUALS){
-                    // parsedOrList.find(); 
+                    // parsedOrList.find();
+                    long leftVal = checkAndGetAttVal(partitions, temp->left->value);
+                    long rightVal = checkAndGetAttVal(partitions, temp->right->value); 
+                    if(leftVal==-2 || rightVal==-2){
+                        cerr << "Invalid CNF!! for "<<temp->left->value <<"-"<<temp->right->value<<"\n"; 
+                        exit(0); 
+                    } 
                     cout << "Left val: "<<leftVal << "rightVal: " << rightVal <<"\n";  
                     long max1 = max<long>(leftVal, rightVal); 
                     // cout << "" 
@@ -206,12 +206,12 @@ double Statistics::processOrlist(long numOfinputTuples, struct OrList* myOrlist,
 
             }
         }else if(temp->right->code == NAME){
-            long val = checkAndGetAttVal(partitions, temp->right->value); 
-             if(val==-2){
-                cerr << "Invalid CNF for !!"<<temp->right->value<<"\n"; 
-                exit(0); 
-            }
             if(temp->code == EQUALS){
+                long val = checkAndGetAttVal(partitions, temp->right->value); 
+                if(val==-2){
+                    cerr << "Invalid CNF for !!"<<temp->right->value<<"\n"; 
+                    exit(0); 
+                }
                     parsedOrList[temp->right->value].push_back(1.0/(double)val); 
                 }else{
                     parsedOrList[temp->right->value].push_back(1.0/3.0); 

@@ -9,7 +9,14 @@ using namespace std;
 class Statistics
 {
 private: 
-	map < vector<char*>, map<char*, long> > StatisticsTable; 
+	struct cmp_str
+	{
+		bool operator()(char const *a, char const *b) const
+		{
+			return std::strcmp(a, b) < 0;
+		}
+	};
+	map < vector<char*>, map<char*, long, cmp_str> > StatisticsTable; 
 	long getNumOfTuples(vector <vector <char*> > &partitions);
 
 public:

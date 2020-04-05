@@ -166,13 +166,14 @@ void q2 (){
 		char* relName5[] = {"orders","customer","orders", "nation"};
 
 
-		cout << s.Estimate(final, relName3,2); 
-	// s.AddRel(relName[0],1500000);
-	// s.AddAtt(relName[0], "o_custkey",150000);
-	// s.AddRel(relName[1],150000);
-	// s.AddAtt(relName[1], "c_custkey",150000);
-	// s.AddAtt(relName[1], "c_nationkey",25);
+	s.AddRel(relName[0],1500000);
+	s.AddAtt(relName[0], "o_custkey",150000);
+	s.AddRel(relName[1],150000);
+	s.AddAtt(relName[1], "c_custkey",150000);
+	s.AddAtt(relName[1], "c_nationkey",25);
 	
+	s.PrintStatistics();
+	cout << s.Estimate(final, relName3,2); 
 	// s.AddRel(relName[2],25);
 	// s.AddAtt(relName[2], "n_nationkey",25);
 	
@@ -449,11 +450,11 @@ void q8 (){
 	yy_scan_string(cnf);
 	yyparse();
 	
-		
+	s.PrintStatistics();
 	double result = s.Estimate(final, relName,2);
-
+	
 	if(fabs(result-48000)>0.1)
-		cout<<"error in estimating Q8\n";
+		cout<<"error in estimating Q8, got:" << result << "\n";
 
 	s.Apply(final, relName,2);
 	

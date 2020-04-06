@@ -173,6 +173,7 @@ TEST(StatisticsTest,ReadWithWrongFileNameDeathTest){
     char *filename1="readandwritetest1.txt";
     Statistics s1;
     ASSERT_DEATH(s1.Read(filename1),"File readandwritetest1.txt doesn't exist!!");
+    remove(filename);
 }
 
 int main(int argc, char **argv) {

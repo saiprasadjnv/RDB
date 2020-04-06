@@ -8,20 +8,12 @@ void printPartitions(vector < vector<char*> > &partitions){
         for(int j=0; j<partitions[i].size(); j++){
             cout << partitions[i][j] << " "; 
         }
-        cout << "\n"; 
+        cout << "\n";   
     }
 }
 
 Statistics::Statistics()
 {
-    // vector<char*> addRelnames, addRelnames1; 
-    // addRelnames.push_back("orders");
-    // addRelnames.push_back("customer"); 
-    // addRelnames1.push_back("nation");
-    // map <char*, ll> tempMap; 
-    // tempMap.insert(make_pair((char *)"total", 10));
-    // StatisticsTable.insert(make_pair(addRelnames, tempMap)); 
-    // StatisticsTable.insert(make_pair(addRelnames1, tempMap)); 
 }
 
 Statistics::Statistics(Statistics &copyMe)
@@ -53,12 +45,17 @@ void Statistics::AddRel(char *relName, int numTuples)
     temp.insert(make_pair((char*)"total", numTuples)); 
     StatisticsTable.insert(make_pair(addRelName, temp));   
 }
+
 void Statistics::AddAtt(char *relName, char *attName, int numDistincts)
 {
     vector<char*> tableName; 
     // char newtempAtt[100]; 
     // strcpy(newtempAtt, attName); 
     tableName.push_back(relName); 
+    if(StatisticsTable.find(tableName)== StatisticsTable.end()){
+        cerr << "Relation "<<relName << " doesn't exist!!!\n"; 
+        exit(0);  
+    }
     ll total = StatisticsTable[tableName]["total"]; 
     if(StatisticsTable.find(tableName) != StatisticsTable.end()){
         if(numDistincts == -1){
@@ -68,6 +65,7 @@ void Statistics::AddAtt(char *relName, char *attName, int numDistincts)
         }
     }
 }
+
 void Statistics::CopyRel(char *oldName, char *newName)
 {
     vector <char*> temp; 
@@ -102,7 +100,7 @@ void Statistics::Read(char *fromWhere)
 {   
     FILE* inFile = fopen(fromWhere, "r");
     if(inFile==nullptr){
-        cerr << "File " << fromWhere <<" doesn't exist!!"; 
+        cerr << "File " << fromWhere <<" doesn't exist!!\n"; 
         exit(0); 
     } 
     ll mapSize;
@@ -133,6 +131,8 @@ void Statistics::Read(char *fromWhere)
     }
     fclose(inFile);
 }
+
+
 void Statistics::Write(char *fromWhere)
 {
     FILE* toFile = fopen(fromWhere, "w"); 
@@ -298,7 +298,7 @@ double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, v
         if(temp->left->code == NAME){
             if(temp->right->code != NAME){
                 if(temp->code == EQUALS){
-                    ll val = checkAndGetAttVal(partitions, temp->left->value, whichPartition); 
+                    ll val = checkAndGetAttVal(partitions, temp->left->value); 
                     if(val==-2){
                         cerr << "Invalid CNF for "<<temp->left->value<<"!!\n"; 
                         exit(0); 
@@ -312,8 +312,8 @@ double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, v
             }else{
                 if(temp->code == EQUALS){
                     // parsedOrList.find();
-                    ll leftVal = checkAndGetAttVal(partitions, temp->left->value, whichPartition);
-                    ll rightVal = checkAndGetAttVal(partitions, temp->right->value, whichPartition2);  
+                    ll leftVal = checkAndGetAttVal(partitions, temp->left->value);
+                    ll rightVal = checkAndGetAttVal(partitions, temp->right->value);  
                     if(leftVal==-2 || rightVal==-2){
                         cerr << "Invalid CNF!! for "<<temp->left->value <<"-"<<temp->right->value<<"\n"; 
                         exit(0); 
@@ -333,7 +333,7 @@ double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, v
             }
         }else if(temp->right->code == NAME){
             if(temp->code == EQUALS){
-                ll val = checkAndGetAttVal(partitions, temp->right->value, whichPartition); 
+                ll val = checkAndGetAttVal(partitions, temp->right->value); 
                 if(val==-2){
                     cerr << "Invalid CNF for !!"<<temp->right->value<<"\n"; 
                     exit(0); 
@@ -358,14 +358,8 @@ double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, v
     return (1.0-fract); 
 }
 
-int Statistics::checkAndGetAttVal(vector <vector <char*> > &partitions, char* attName, int &whichPartition){
+int Statistics::checkAndGetAttVal(vector <vector <char*> > &partitions, char* attName){
     int val=-2; 
-    // for(auto it = partitions.begin(); it != partitions.end(); it++){ 
-    //     if(StatisticsTable.find(it->front) != StatisticsTable.end()); 
-    // }
-    // printPartitions(partitions); 
-    // PrintStatistics();
-    // string  str=attName;
     for(int i=0; i<partitions.size(); i++){
         // cout << "looking in relation " << partitions[i][0] << " for " << attName <<"1\n"; 
         if(StatisticsTable.find(partitions[i]) != StatisticsTable.end() && \

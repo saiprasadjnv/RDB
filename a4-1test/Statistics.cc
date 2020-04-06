@@ -49,7 +49,7 @@ void Statistics::AddAtt(char *relName, char *attName, int numDistincts)
     tableName.push_back(relName); 
     if(StatisticsTable.find(tableName)== StatisticsTable.end()){
         cerr << "Relation "<<relName << " doesn't exist!!!\n"; 
-        exit(0);  
+        exit(1);  
     }
     ll total = StatisticsTable[tableName]["total"]; 
     if(StatisticsTable.find(tableName) != StatisticsTable.end()){
@@ -69,7 +69,7 @@ void Statistics::CopyRel(char *oldName, char *newName)
     temp.push_back(oldName); 
     if(StatisticsTable.find(temp) == StatisticsTable.end()){
         cerr << "Relation " << oldName << " doesn't exist!!\n"; 
-        exit(0); 
+        exit(1); 
     }
     vector <char*> temp2; 
     map <char*, ll, cmp_str> newMap; 
@@ -96,7 +96,7 @@ void Statistics::Read(char *fromWhere)
     FILE* inFile = fopen(fromWhere, "r");
     if(inFile==nullptr){
         cerr << "File " << fromWhere <<" doesn't exist!!\n"; 
-        exit(0); 
+        exit(1); 
     } 
     ll mapSize;
     fscanf(inFile, "%lld", &mapSize);  
@@ -192,7 +192,7 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
     int res = CheckifRelsExist(relNames, numToJoin, partitions);  
     if(res == -1){
         cerr << "Given relations cannot be used for estimation!!!\n";
-        exit(0); 
+        exit(1); 
     } 
     struct AndList* currParsing = parseTree; 
     double fract = 1.0; 
@@ -223,7 +223,7 @@ void Statistics::PrintStatistics(){
 //in the StatisticsTable. Returns 1 if the operation type is Selection. 
 //Returns an integer >1 if the operation type is Join. Returns -1 if the given set of relNames is invalid. 
 int Statistics::CheckifRelsExist(char* relNames[], int numToJoin, vector <vector <char*> > &partitions){
-    map <char*, int> relNamesMap; 
+    map <char*, int,cmp_str> relNamesMap; 
     int size1 = numToJoin, opType =0 ; 
     for(int i=0; i<numToJoin; i++){
         ++relNamesMap[relNames[i]];
@@ -288,7 +288,7 @@ double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, v
                     ll val = checkAndGetAttVal(partitions, temp->left->value); 
                     if(val==-2){
                         cerr << "Invalid CNF for "<<temp->left->value<<"!!\n"; 
-                        exit(0); 
+                        exit(1); 
                     }
                     parsedOrList[temp->left->value].push_back(1.0/(double)val); 
                 }else{
@@ -318,7 +318,7 @@ double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, v
                 ll val = checkAndGetAttVal(partitions, temp->right->value); 
                 if(val==-2){
                     cerr << "Invalid CNF for !!"<<temp->right->value<<"\n"; 
-                    exit(0); 
+                    exit(1); 
                 }
                     parsedOrList[temp->right->value].push_back(1.0/(double)val); 
                 }else{

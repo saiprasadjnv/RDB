@@ -18,8 +18,7 @@ private:
 		bool operator()(char const *a, char const *b) const
 		{
 			return std::strcmp(a, b) < 0;
-		}
-		map <vector <char*>, pair<char*, int> > tempState; 
+		} 
 	};
 	map < vector<char*>, map<char*, ll, cmp_str> > StatisticsTable; 
 	

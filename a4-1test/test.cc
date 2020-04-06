@@ -125,30 +125,26 @@ void q1 (){
 
 	Statistics s;
         char *relName[] = {"lineitem"};
-			char *relName1[] = {"orders","customer","nation"};
-	
+
 	s.AddRel(relName[0],6001215);
 	s.AddAtt(relName[0], "l_returnflag",3);
 	s.AddAtt(relName[0], "l_discount",11);
 	s.AddAtt(relName[0], "l_shipmode",7);
 
-	// s.PrintStatistics();
-	// cout << "Check if rel exist in q1: " << s.CheckifRelsExist(relName, 1) << "\n";
-	// cout << "Check if rel exist2 in q1: " << s.CheckifRelsExist(relName1, 3) << "\n";
+		
+	char *cnf = "(l_returnflag = 'R') AND (l_discount < 0.04 OR l_shipmode = 'MAIL')";
 
-	// char *cnf = "(l_returnflag = 'R') AND (l_discount < 0.04 OR l_shipmode = 'MAIL')";
+	yy_scan_string(cnf);
+	yyparse();
 
-	// yy_scan_string(cnf);
-	// yyparse();
+	double result = s.Estimate(final, relName, 1);
+	cout<<"Your estimation Result  " <<result;
+	cout<<"\n Correct Answer: 8.5732e+5";
 
-	// double result = s.Estimate(final, relName, 1);
-	// cout<<"Your estimation Result  " <<result;
-	// cout<<"\n Correct Answer: 8.5732e+5";
+	s.Apply(final, relName, 1);
 
-	// s.Apply(final, relName, 1);
-
-	// // test write and read
-	// s.Write(fileName);
+	// test write and read
+	s.Write(fileName);
 	
 	
 }
@@ -159,51 +155,38 @@ void q2 (){
 
 	Statistics s;
         char *relName[] = {"orders","customer","nation"};
-		char *relName1[] = {"nation","customer"};
-		char* relName2[] = {"orders","customer","orders","customer"};
-		char *relName3[] = {"orders","customer"};
-		char* relName4[] = {"orders","customer","orders","customer", "nation"};
-		char* relName5[] = {"orders","customer","orders", "nation"};
 
-
+	
 	s.AddRel(relName[0],1500000);
 	s.AddAtt(relName[0], "o_custkey",150000);
+
 	s.AddRel(relName[1],150000);
 	s.AddAtt(relName[1], "c_custkey",150000);
 	s.AddAtt(relName[1], "c_nationkey",25);
 	
-	s.PrintStatistics();
-	cout << s.Estimate(final, relName3,2); 
-	// s.AddRel(relName[2],25);
-	// s.AddAtt(relName[2], "n_nationkey",25);
+	s.AddRel(relName[2],25);
+	s.AddAtt(relName[2], "n_nationkey",25);
+
+	char *cnf = "(c_custkey = o_custkey)";
+	yy_scan_string(cnf);
+	yyparse();
+
+	// Join the first two relations in relName
+	s.Apply(final, relName, 2);
 	
-	// s.PrintStatistics();
-	// cout << "Check if Rels exist q2: " << s.CheckifRelsExist(relName, 3) << "\n"; 
-	// cout << "Check if Rels exist q2: " << s.CheckifRelsExist(relName1, 2) << "\n"; 
-	// cout << "Check if Rels exist q2: " << s.CheckifRelsExist(relName2, 4) << "\n"; 
-	// cout << "Check if Rels exist q2: " << s.CheckifRelsExist(relName3, 2) << "\n"; 
-	// cout << "Check if Rels exist q2: " << s.CheckifRelsExist(relName4, 5) << "\n"; 
-	// cout << "Check if Rels exist q2: " << s.CheckifRelsExist(relName5, 4) << "\n"; 
-
-
-	// char *cnf = "(c_custkey = o_custkey)";
-	// yy_scan_string(cnf);
-	// yyparse();
-
-	// // Join the first two relations in relName
-	// s.Apply(final, relName, 2);
+	cnf = " (c_nationkey = n_nationkey)";
+	yy_scan_string(cnf);
+	yyparse();
 	
-	// cnf = " (c_nationkey = n_nationkey)";
-	// yy_scan_string(cnf);
-	// yyparse();
-	
-	// double result = s.Estimate(final, relName, 3);
-	// if(fabs(result-1500000)>0.1)
-	// 	cout<<"error in estimating Q2\n";
-	// s.Apply(final, relName, 3);
+	double result = s.Estimate(final, relName, 3);
+	if(fabs(result-1500000)>0.1)
+		cout<<"error in estimating Q2\n";
+	s.Apply(final, relName, 3);
 
-	// s.Write(fileName);
-		
+	s.Write(fileName);
+
+	
+	
 }
 
 // Note there is a self join
@@ -212,7 +195,7 @@ void q3 (){
 	Statistics s;
 	char *relName[] = {"supplier","customer","nation"};
 
-	s.Read(fileName);
+	// s.Read(fileName);
 	
 	s.AddRel(relName[0],10000);
 	s.AddAtt(relName[0], "s_nationey",25);
@@ -365,7 +348,7 @@ void q6 (){
 	Statistics s;
         char *relName[] = { "partsupp", "supplier", "nation"};
 
-	s.Read(fileName);
+	// s.Read(fileName);
 	
 	s.AddRel(relName[0],800000);
 	s.AddAtt(relName[0], "ps_suppkey",10000);
@@ -383,8 +366,8 @@ void q6 (){
 	yy_scan_string(cnf);
 	yyparse();
 	s.Apply(final, relName, 2);
-	s.PrintStatistics();
-	cnf = " (s_nationkey = n_nationkey)  AND (n_name = 'AMERICA') AND (s_suppkey = ps_suppkey)   ";
+	
+	cnf = " (s_nationkey = n_nationkey)  AND (n_name = 'AMERICA')   ";
 	yy_scan_string(cnf);
 	yyparse();
 
@@ -394,7 +377,9 @@ void q6 (){
 		cout<<"error in estimating Q6\n";
 	s.Apply(final, relName, 3);
 	
-	s.Write(fileName);	
+	s.Write(fileName);
+	
+	
 
 }
 
@@ -403,7 +388,7 @@ void q7(){
 	Statistics s;
         char *relName[] = { "orders", "lineitem"};
 
-	s.Read(fileName);
+	// s.Read(fileName);
 	
 
 	s.AddRel(relName[0],1500000);
@@ -435,7 +420,7 @@ void q8 (){
 	Statistics s;
         char *relName[] = { "part",  "partsupp"};
 
-	s.Read(fileName);
+	// s.Read(fileName);
 	
 	s.AddRel(relName[0],200000);
 	s.AddAtt(relName[0], "p_partkey",200000);
@@ -450,11 +435,11 @@ void q8 (){
 	yy_scan_string(cnf);
 	yyparse();
 	
-	s.PrintStatistics();
+		
 	double result = s.Estimate(final, relName,2);
-	
+
 	if(fabs(result-48000)>0.1)
-		cout<<"error in estimating Q8, got:" << result << "\n";
+		cout<<"error in estimating Q8\n";
 
 	s.Apply(final, relName,2);
 	
@@ -504,7 +489,7 @@ void q10 (){
 	Statistics s;
         char *relName[] = { "customer", "orders", "lineitem","nation"};
 
-	s.Read(fileName);
+	// s.Read(fileName);
 	
 	s.AddRel(relName[0],150000);
 	s.AddAtt(relName[0], "c_custkey",150000);
@@ -519,6 +504,8 @@ void q10 (){
 	
 	s.AddRel(relName[3],25);
 	s.AddAtt(relName[3], "n_nationkey",25);
+
+	// s.PrintStatistics();
 	
 	char *cnf = "(c_custkey = o_custkey)  AND (o_orderdate > '1994-01-23') ";
 	yy_scan_string(cnf);
@@ -534,6 +521,7 @@ void q10 (){
 	yy_scan_string(cnf);                                                                               	yyparse();	
 	
 	double result = s.Estimate(final, relName, 4);
+	// cout <<"Result:"<<result <<"--"<< result -2000405 <<"--" <<" Expected: 2000405"<< "\n";
 	if(fabs(result-2000405)>0.1)
 		cout<<"error in estimating Q10\n";
 
@@ -549,11 +537,11 @@ void q11 (){
 	Statistics s;
         char *relName[] = { "part",  "lineitem"};
 
-	s.Read(fileName);
+	// s.Read(fileName);
 	
 	s.AddRel(relName[0],200000);
 	s.AddAtt(relName[0], "p_partkey",200000);
-	s.AddAtt(relName[0], "p_conatiner",40);
+	s.AddAtt(relName[0], "p_container",40);
 
 	s.AddRel(relName[1],6001215);
 	s.AddAtt(relName[1], "l_partkey",200000);

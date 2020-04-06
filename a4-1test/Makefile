@@ -9,10 +9,10 @@ endif
 
 classes= Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o Function.o SelectFile.o SelectPipe.o Project.o DuplicateRemoval.o WriteOut.o Sum.o GroupBy.o JoinUtil.o Join.o Statistics.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o
 
-all: test.out a2test reloptest
+all: a4-1.out a2test reloptest
 
-test.out: $(classes) test.o
-	$(CC) -o test.out $(classes) test.o -ll -lpthread
+a4-1.out: $(classes) test.o
+	$(CC) -o a4-1.out $(classes) test.o -ll -lpthread
 	
 a2-2test.out: $(classes) a2-2test.o
 	$(CC) -o a2-2test.out $(classes) a2-2test.o -ll -lpthread

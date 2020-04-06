@@ -140,6 +140,8 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
     for(int i=0; i< partitions.size(); i++){
         StatisticsTable.erase(partitions[i]); 
     }
+    // cout <<"End of apply-------------\n";
+    // PrintStatistics();
 }
 double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numToJoin)
 {
@@ -227,10 +229,10 @@ int Statistics::CheckifRelsExist(char* relNames[], int numToJoin, vector <vector
 double Statistics::getNumOfTuples(vector <vector <char*> > &partitions, double fraction){ 
     double total = fraction; 
     for (int i=0; i<partitions.size(); i++){
-        total *= StatisticsTable[partitions[i]]["total"];
-        // cout << "in get num Tups " << total << "\n";
+        total *= (double)StatisticsTable[partitions[i]]["total"];
+        // cout << "in get num Tups " << total <<"--" << total - 2000405<< "--"<<StatisticsTable[partitions[i]]["total"]<<"\n";
     }
-    return total;
+    return round(total);
 }   
 
 double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, vector <vector <char*> > &partitions){

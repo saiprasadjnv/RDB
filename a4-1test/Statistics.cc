@@ -3,7 +3,6 @@
 #include <cmath>
 using namespace std; 
 
-
 void printPartitions(vector < vector<char*> > &partitions){
     for(int i=0; i<partitions.size(); i++){
         for(int j=0; j<partitions[i].size(); j++){
@@ -100,10 +99,57 @@ void Statistics::CopyRel(char *oldName, char *newName)
 }
 	
 void Statistics::Read(char *fromWhere)
-{
+{   
+    FILE* inFile = fopen(fromWhere, "r");
+    if(inFile==nullptr){
+        cerr << "File " << fromWhere <<" doesn't exist!!"; 
+        exit(0); 
+    } 
+    ll mapSize;
+    fscanf(inFile, "%lld", &mapSize);  
+    if(mapSize <=0){
+        return; 
+    }
+    for(ll i=0; i<mapSize; i++){
+        vector<char*> partition; 
+        ll partitionSize; 
+        fscanf(inFile, "%lld", &partitionSize); 
+        for(ll j=0; j<partitionSize; j++){
+            char* relName = new char[120]; 
+            fscanf(inFile, "%s", relName);
+            partition.push_back(relName); 
+         }
+         ll attsMapSize;
+         map <char*, ll, cmp_str> attsMap; 
+         fscanf(inFile, "%lld", &attsMapSize); 
+         for(ll k=0; k<attsMapSize; k++){
+             char* attName = new char[100]; 
+             ll numDistincts; 
+             fscanf(inFile,"%s", attName);
+             fscanf(inFile,"%lld",&numDistincts);  
+            attsMap.insert(make_pair(attName, numDistincts)); 
+         }
+         StatisticsTable.insert(make_pair(partition, attsMap));  
+    }
+    fclose(inFile);
 }
 void Statistics::Write(char *fromWhere)
 {
+    FILE* toFile = fopen(fromWhere, "w"); 
+    fprintf(toFile, "%ld\n", StatisticsTable.size()); 
+    for(auto it= StatisticsTable.begin(); it!=StatisticsTable.end(); it++){
+        fprintf(toFile, "%ld", it->first.size()); 
+        for(int i=0; i<it->first.size(); i++){
+            fprintf(toFile, " %s",it->first[i]);  
+        }
+        fprintf(toFile,"\n"); 
+        fprintf(toFile, "%ld ", it->second.size());
+        for(auto it1=it->second.begin(); it1!= it->second.end(); it1++){ 
+            fprintf(toFile, "%s %d ", it1->first, it1->second); 
+        }
+        fprintf(toFile, "\n");
+    } 
+    fclose(toFile); 
 }
 
 void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoin) 
@@ -177,6 +223,7 @@ void Statistics::PrintStatistics(){
     // map <vector<char*>, map<char*, int> >::iterator it1; 
     // map<char*, int> it2; 
     for(auto it=StatisticsTable.begin(); it!= StatisticsTable.end(); it++){
+        cout << "\n"; 
         for(int i=0; i<it->first.size(); i++){
             cout << it->first[i] << "|";
         }

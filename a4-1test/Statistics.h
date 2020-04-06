@@ -5,7 +5,9 @@
 #include <vector>
 #include <string> 
 #include "cstring"
+
 using namespace std; 
+#define ll long long
 
 class Statistics
 {
@@ -16,9 +18,12 @@ private:
 		{
 			return std::strcmp(a, b) < 0;
 		}
+		map <vector <char*>, pair<char*, int> > tempState; 
 	};
-	map < vector<char*>, map<char*, long, cmp_str> > StatisticsTable; 
-	long getNumOfTuples(vector <vector <char*> > &partitions);
+	map < vector<char*>, map<char*, ll, cmp_str> > StatisticsTable; 
+	// map < vector <char*>, map <char*, int, cmp_str> > tempState; 
+	vector <pair <char*, ll>> tempState; 
+	double getNumOfTuples(vector <vector <char*> > &partitions, double fraction);
 
 public:
 	Statistics();
@@ -43,14 +48,14 @@ public:
 	
 	//This method checks if the given CNF in the parseTree is consistent with the relations in the relNames. 
 	//Returns 1 if consistent. Exits the program if inconsistent. 
-	int checkAndGetAttVal(vector <vector <char*> > &partitions, char* attName);  
+	int checkAndGetAttVal(vector <vector <char*> > &partitions, char* attName, int &whichPartition);  
 	
 	//Prints the StatisticsTable. Used for debugging. 
 	void PrintStatistics(); 
 
-	int GetFilteredTuples(OrList or1, long numOfTuples);
+	int GetFilteredTuples(OrList or1, ll numOfTuples);
 
-	double processOrlist(long numOfinputTuples, struct OrList* myOrlist, vector <vector <char*> > &partitions); 
+	double processOrlist(ll numOfinputTuples, struct OrList* myOrlist, vector <vector <char*> > &partitions); 
 };
 
 #endif

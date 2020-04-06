@@ -109,14 +109,43 @@ void Statistics::Write(char *fromWhere)
 void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoin) 
 {
     // CheckifRelsExist
-
-
+    ll resultingNoOfTuples = (ll)Estimate(parseTree, relNames, numToJoin); 
+    vector< vector<char*> > partitions; 
+    int res = CheckifRelsExist(relNames, numToJoin, partitions); 
+    if(res <= 1){
+        return; 
+    }
+    //join
+    vector<char*> newPartition; 
+    // if(numToJoin)
+    for(int i=0; i< numToJoin; i++){
+        newPartition.push_back(relNames[i]); 
+    }   
+    map <char*, ll, cmp_str> newAtts; 
+    for(int i=0; i< partitions.size(); i++){
+       for(auto it=StatisticsTable[partitions[i]].begin();it!= StatisticsTable[partitions[i]].end(); it++){
+           if(strcmp(it->first, "total")==0){
+               continue;
+           }
+           newAtts.insert(make_pair(it->first, it->second)); 
+       }
+    }
+    for(int i=0; i< tempState.size(); i++){
+        newAtts[tempState[i].first] = tempState[i].second; 
+    }
+    newAtts.insert(make_pair((char*)"total", resultingNoOfTuples)); 
+    //update total 
+    //update atts 
+    StatisticsTable.insert(make_pair(newPartition, newAtts)); 
+    for(int i=0; i< partitions.size(); i++){
+        StatisticsTable.erase(partitions[i]); 
+    }
 }
 double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numToJoin)
 {
     vector< vector<char*> > partitions; 
     int res = CheckifRelsExist(relNames, numToJoin, partitions); 
-    printPartitions(partitions); 
+    // printPartitions(partitions); 
     if(res == -1){
         cerr << "Given relations cannot be used for estimation!!!\n";
         exit(0); 
@@ -133,9 +162,9 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
     double fract = 1.0; 
     while(currParsing != nullptr){
         double result = processOrlist(1, currParsing->left, partitions); 
-        cout<< "result val: " << result <<"\n"; 
+        // cout<< "result val: " << result <<"\n"; 
         fract *= result;
-        cout<< "fract val: " << fract <<"\n"; 
+        // cout<< "fract val: " << fract <<"\n"; 
         currParsing = currParsing->rightAnd; 
         // interNumOfTuples *= fract; 
     }
@@ -215,15 +244,17 @@ double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, v
     struct OrList* currOp = myOrlist;
     while(currOp != nullptr){ 
         struct ComparisonOp* temp = currOp->left; 
+        int whichPartition = -1;
+        int whichPartition2 = -1; 
         if(temp->left->code == NAME){
             if(temp->right->code != NAME){
                 if(temp->code == EQUALS){
-                    ll val = checkAndGetAttVal(partitions, temp->left->value); 
+                    ll val = checkAndGetAttVal(partitions, temp->left->value, whichPartition); 
                     if(val==-2){
                         cerr << "Invalid CNF for "<<temp->left->value<<"!!\n"; 
                         exit(0); 
                     }
-                    cout << val << " ," << 1.0/(double)val << "\n"; 
+                    // cout << val << " ," << 1.0/(double)val << "\n"; 
                     parsedOrList[temp->left->value].push_back(1.0/(double)val); 
                 }else{
                     parsedOrList[temp->left->value].push_back(1.0/3.0); 
@@ -232,17 +263,20 @@ double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, v
             }else{
                 if(temp->code == EQUALS){
                     // parsedOrList.find();
-                    ll leftVal = checkAndGetAttVal(partitions, temp->left->value);
-                    ll rightVal = checkAndGetAttVal(partitions, temp->right->value); 
+                    ll leftVal = checkAndGetAttVal(partitions, temp->left->value, whichPartition);
+                    ll rightVal = checkAndGetAttVal(partitions, temp->right->value, whichPartition2);  
                     if(leftVal==-2 || rightVal==-2){
                         cerr << "Invalid CNF!! for "<<temp->left->value <<"-"<<temp->right->value<<"\n"; 
                         exit(0); 
                     } 
-                    cout << "Left val: "<<leftVal << "rightVal: " << rightVal <<"\n";  
+                    // cout << "Left val: "<<leftVal << "rightVal: " << rightVal <<"\n";   
+                    ll minval = min<ll>(leftVal, rightVal);              
+                    tempState.push_back(make_pair(temp->left->value,minval)); 
+                    tempState.push_back(make_pair(temp->right->value, minval)); 
                     ll max1 = max<ll>(leftVal, rightVal); 
                     // cout << "" 
                     parsedOrList[temp->left->value].push_back( 1.0/(double)max1); 
-                    cout << parsedOrList[temp->left->value].size() << ": size, " << parsedOrList[temp->left->value][0] << "\n";
+                    // cout << parsedOrList[temp->left->value].size() << ": size, " << parsedOrList[temp->left->value][0] << "\n";
                 }else{
                     parsedOrList[temp->left->value].push_back(1.0/3.0); 
                 }
@@ -250,7 +284,7 @@ double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, v
             }
         }else if(temp->right->code == NAME){
             if(temp->code == EQUALS){
-                ll val = checkAndGetAttVal(partitions, temp->right->value); 
+                ll val = checkAndGetAttVal(partitions, temp->right->value, whichPartition); 
                 if(val==-2){
                     cerr << "Invalid CNF for !!"<<temp->right->value<<"\n"; 
                     exit(0); 
@@ -267,15 +301,15 @@ double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, v
         double tmpfract=0.0;
         for(int i=0;i<itr->second.size();i++){
             tmpfract+=itr->second[i];
-            cout << itr->second[i] << "**" << tmpfract << " ";  
+            // cout << itr->second[i] << "**" << tmpfract << " ";  
         }
-        cout << "\n" << tmpfract<<"\n";
+        // cout << "\n" << tmpfract<<"\n";
         fract *= (1.0-tmpfract); 
     }
     return (1.0-fract); 
 }
 
-int Statistics::checkAndGetAttVal(vector <vector <char*> > &partitions, char* attName){
+int Statistics::checkAndGetAttVal(vector <vector <char*> > &partitions, char* attName, int &whichPartition){
     int val=-2; 
     // for(auto it = partitions.begin(); it != partitions.end(); it++){ 
     //     if(StatisticsTable.find(it->front) != StatisticsTable.end()); 
@@ -284,10 +318,10 @@ int Statistics::checkAndGetAttVal(vector <vector <char*> > &partitions, char* at
     // PrintStatistics();
     // string  str=attName;
     for(int i=0; i<partitions.size(); i++){
-        cout << "looking in relation " << partitions[i][0] << " for " << attName <<"1\n"; 
+        // cout << "looking in relation " << partitions[i][0] << " for " << attName <<"1\n"; 
         if(StatisticsTable.find(partitions[i]) != StatisticsTable.end() && \
             StatisticsTable[partitions[i]].find(attName)!= StatisticsTable[partitions[i]].end()){
-           printf("Printing  : %ld\n", StatisticsTable[partitions[i]][attName]);// << " for " << attName <<"\n";
+        //    printf("Printing  : %ld\n", StatisticsTable[partitions[i]][attName]);// << " for " << attName <<"\n";
         //    printf("Printing1  : %ld\n", StatisticsTable[partitions[i]][(char*)str.c_str()]);// << " for " << attName <<"\n";
             val = StatisticsTable[partitions[i]][attName]; 
             break;

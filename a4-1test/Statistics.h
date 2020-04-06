@@ -12,6 +12,7 @@ using namespace std;
 class Statistics
 {
 private: 
+	//Comparison functor for the map. 
 	struct cmp_str
 	{
 		bool operator()(char const *a, char const *b) const
@@ -21,13 +22,22 @@ private:
 		map <vector <char*>, pair<char*, int> > tempState; 
 	};
 	map < vector<char*>, map<char*, ll, cmp_str> > StatisticsTable; 
-	// map < vector <char*>, map <char*, int, cmp_str> > tempState; 
+	
+	// Each time an estimate is called, this vector holds the possible changes in the Statistics object 
+	// The changes are committed to the Statistics object only when the Apply method is called. 
 	vector <pair <char*, ll>> tempState; 
+
+	//It takes the selectivity factor as input and 
+	//returns the total number of output tuples for the given operation. 
 	double getNumOfTuples(vector <vector <char*> > &partitions, double fraction);
 
 public:
+	//Default constructor. 
 	Statistics();
-	Statistics(Statistics &copyMe);	 // Performs deep copy
+
+	//Takes the copyMe Statistics object and performs deep copy.
+	//Initializes the current Object state with the state of copyMe object. 
+	Statistics(Statistics &copyMe);	
 	~Statistics();
 
 	//Adds the relation to the Statistics object. 
@@ -36,13 +46,23 @@ public:
 	//Adds the attribute corresponding to an existing relation in the Statistics object. 
 	//Exits the program if relation doesn't exist.
 	void AddAtt(char *relName, char *attName, int numDistincts);
+
+	//Produces a copy of the relation given by "oldName" under "newName". 
 	void CopyRel(char *oldName, char *newName);
 	
+	//Initializes the state of the current Statistics object 
+	//using the data available in the file "fromWhere". 
 	void Read(char *fromWhere);
+
+	//Writes the state of the current Statistics object to the file "fromWhere". 
 	void Write(char *fromWhere);
 
+	//Applies the join operation in the current Statistics object. 
+	//Merges the partitions which are used in the join operation and updates the 
+	//information on Total Number of tuples and the number of distinct values for each attribute. 
 	void  Apply(struct AndList *parseTree, char *relNames[], int numToJoin);
 	
+	//Returns the estimated number of output tuples for the given operation.  
 	double Estimate(struct AndList *parseTree, char **relNames, int numToJoin);
 
 	//This method checks if the given relations given are consistent with the existing relation Partitions
@@ -56,6 +76,7 @@ public:
 	//Prints the StatisticsTable. Used for debugging. 
 	void PrintStatistics(); 
 
+	//Processes the given orList and returns the selectivity factor of the entire orList. 
 	double processOrlist(ll numOfinputTuples, struct OrList* myOrlist, vector <vector <char*> > &partitions); 
 };
 

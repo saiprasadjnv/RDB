@@ -30,8 +30,11 @@ public:
 	Statistics(Statistics &copyMe);	 // Performs deep copy
 	~Statistics();
 
-
+	//Adds the relation to the Statistics object. 
 	void AddRel(char *relName, int numTuples);
+
+	//Adds the attribute corresponding to an existing relation in the Statistics object. 
+	//Exits the program if relation doesn't exist.
 	void AddAtt(char *relName, char *attName, int numDistincts);
 	void CopyRel(char *oldName, char *newName);
 	
@@ -48,12 +51,10 @@ public:
 	
 	//This method checks if the given CNF in the parseTree is consistent with the relations in the relNames. 
 	//Returns 1 if consistent. Exits the program if inconsistent. 
-	int checkAndGetAttVal(vector <vector <char*> > &partitions, char* attName, int &whichPartition);  
+	int checkAndGetAttVal(vector <vector <char*> > &partitions, char* attName);  
 	
 	//Prints the StatisticsTable. Used for debugging. 
 	void PrintStatistics(); 
-
-	int GetFilteredTuples(OrList or1, ll numOfTuples);
 
 	double processOrlist(ll numOfinputTuples, struct OrList* myOrlist, vector <vector <char*> > &partitions); 
 };

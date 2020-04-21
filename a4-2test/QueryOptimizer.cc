@@ -144,10 +144,13 @@ vector <string> QueryOptimizer::processOrlist(struct OrList* processMe){
 
 string QueryOptimizer::whichRelation(char* attribute){
     char relations[10][10] = {"supplier", "partsupp","part","nation","customer","orders","region","lineitem"}; 
-    while(attribute[0]!='.'){
-        attribute += 1; 
+    //To delete the alias part.. To search in the schema..
+    // May be possible to search using the statisticsTable directly using the actual attribute name..
+    int i = strlen(attribute)-1; 
+    while(i>=0 && attribute[i]!='.'){
+        i-=1; 
     }
-    attribute += 1; 
+    attribute = attribute+i+1; 
     // cout << "Searching Attribute " << attribute << "\n";  
     for(int i=0; i<8; i++){
         Schema newSchema("catalog",relations[i]); 

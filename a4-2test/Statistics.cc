@@ -156,37 +156,48 @@ void Statistics::Write(char *fromWhere)
 //information on Total Number of tuples and the number of distinct values for each attribute. 
 void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoin) 
 {
+    selectTempState.clear();
     ll resultingNoOfTuples = (ll)Estimate(parseTree, relNames, numToJoin); 
     vector< vector<string> > partitions; 
     int res = CheckifRelsExist(relNames, numToJoin, partitions); 
-    if(res <= 1){
+    if(res < 1){
         return; 
     }
-    //join
-    vector<string> newPartition; 
-    for(int i=0; i< numToJoin; i++){
-        newPartition.push_back(string(relNames[i])); 
-    }   
-    //During the estimate, the possible changes to Statistics object are stored in tempState. 
-    //These changes are committed here. 
-    map <string, ll> newAtts; 
-    for(int i=0; i< partitions.size(); i++){
-       for(auto it=StatisticsTable[partitions[i]].begin();it!= StatisticsTable[partitions[i]].end(); it++){
-           if(it->first.compare(string("total"))==0){
-               continue;
-           }
-           newAtts.insert(make_pair(it->first, it->second)); 
-       }
+    //select
+    if(res==1){
+        for(auto it=selectTempState.begin();it!=selectTempState.end();it++){
+            StatisticsTable[partitions[0]][it->first]=it->second;
+        }
+        StatisticsTable[partitions[0]][string("total")]=resultingNoOfTuples;
+        selectTempState.clear();
+    }else{
+        //join
+        vector<string> newPartition; 
+        for(int i=0; i< numToJoin; i++){
+            newPartition.push_back(string(relNames[i])); 
+        }   
+        //During the estimate, the possible changes to Statistics object are stored in tempState. 
+        //These changes are committed here. 
+        map <string, ll> newAtts; 
+        for(int i=0; i< partitions.size(); i++){
+        for(auto it=StatisticsTable[partitions[i]].begin();it!= StatisticsTable[partitions[i]].end(); it++){
+            if(it->first.compare(string("total"))==0){
+                continue;
+            }
+            newAtts.insert(make_pair(it->first, it->second)); 
+        }
+        }
+        for(int i=0; i< tempState.size(); i++){
+            newAtts[tempState[i].first] = tempState[i].second; 
+        }
+        newAtts.insert(make_pair(string("total"), resultingNoOfTuples)); 
+        StatisticsTable.insert(make_pair(newPartition, newAtts)); 
+        for(int i=0; i< partitions.size(); i++){
+            StatisticsTable.erase(partitions[i]); 
+        }
+        tempState.clear(); 
     }
-    for(int i=0; i< tempState.size(); i++){
-        newAtts[tempState[i].first] = tempState[i].second; 
-    }
-    newAtts.insert(make_pair(string("total"), resultingNoOfTuples)); 
-    StatisticsTable.insert(make_pair(newPartition, newAtts)); 
-    for(int i=0; i< partitions.size(); i++){
-        StatisticsTable.erase(partitions[i]); 
-    }
-    tempState.clear(); 
+    
 }
 
 //Returns the estimated number of output tuples for the given operation(CNF) in parseTree.  
@@ -288,15 +299,29 @@ double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, v
         int whichPartition2 = -1; 
         if(temp->left->code == NAME){
             if(temp->right->code != NAME){
-                if(temp->code == EQUALS){
-                    ll val = checkAndGetAttVal(partitions, temp->left->value); 
+                ll val = checkAndGetAttVal(partitions, temp->left->value);
+                if(temp->code == EQUALS){ 
                     if(val==-2){
                         cerr << "Invalid CNF for "<<temp->left->value<<"!!\n"; 
                         exit(1); 
                     }
                     parsedOrList[temp->left->value].push_back(1.0/(double)val); 
+                    if(selectTempState.find(string(temp->left->value))==selectTempState.end()){
+                        selectTempState.insert(make_pair(string(temp->left->value),1));
+                    }else{
+                        selectTempState[string(temp->left->value)]+=1;
+                    }
                 }else{
                     parsedOrList[temp->left->value].push_back(1.0/3.0); 
+                    if(val>0){
+                        ll val1=(val/3);
+                         if(selectTempState.find(string(temp->left->value))==selectTempState.end()){
+                            selectTempState.insert(make_pair(string(temp->left->value),val1));
+                        }else{
+                            selectTempState[string(temp->left->value)]+=val1;
+                        }
+                    }
+                    
                 }
 
             }else{
@@ -318,15 +343,28 @@ double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, v
 
             }
         }else if(temp->right->code == NAME){
+            ll val = checkAndGetAttVal(partitions, temp->right->value); 
             if(temp->code == EQUALS){
-                ll val = checkAndGetAttVal(partitions, temp->right->value); 
                 if(val==-2){
                     cerr << "Invalid CNF for !!"<<temp->right->value<<"\n"; 
                     exit(1); 
                 }
                     parsedOrList[temp->right->value].push_back(1.0/(double)val); 
+                    if(selectTempState.find(string(temp->right->value))==selectTempState.end()){
+                        selectTempState.insert(make_pair(string(temp->right->value),1));
+                    }else{
+                        selectTempState[string(temp->right->value)]+=1;
+                    }
                 }else{
-                    parsedOrList[temp->right->value].push_back(1.0/3.0); 
+                    parsedOrList[temp->right->value].push_back(1.0/3.0);
+                    if(val>0){
+                        ll val1=(val/3);
+                         if(selectTempState.find(string(temp->right->value))==selectTempState.end()){
+                            selectTempState.insert(make_pair(string(temp->right->value),val1));
+                        }else{
+                            selectTempState[string(temp->right->value)]+=val1;
+                        }
+                    } 
                 }
         }
         currOp = currOp->rightOr; 

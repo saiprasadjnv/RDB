@@ -1,5 +1,6 @@
 #include "QueryOptimizer.h"
 #include <iostream>
+#include <algorithm>
 using namespace std; 
 
 QueryOptimizer::QueryOptimizer(){

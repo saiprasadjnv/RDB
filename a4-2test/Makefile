@@ -11,7 +11,7 @@ classes= Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.
 all: main
 
 main: $(classes) main.o
-	$(CC) -o main $(classes) main.o -ll
+	$(CC) -o main $(classes) main.o -ll -lpthread
 	
 main.o : main.cc
 	$(CC) -g -c main.cc

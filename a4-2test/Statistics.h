@@ -43,6 +43,8 @@ private:
 	// The changes are committed to the Statistics object only when the Apply method is called. 
 	vector <pair <string, ll>> tempState; 
 
+	map <string, ll > selectTempState;
+
 	//It takes the selectivity factor as input and 
 	//returns the total number of output tuples for the given operation. 
 	double getNumOfTuples(vector <vector <string> > &partitions, double fraction);

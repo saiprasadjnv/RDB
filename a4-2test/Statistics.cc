@@ -1,5 +1,6 @@
 #include "Statistics.h"
 #include <iostream>
+#include <string>
 #include <cmath>
 using namespace std; 
 
@@ -13,11 +14,11 @@ Statistics::Statistics()
 Statistics::Statistics(Statistics &copyMe)
 {
     for(auto it=copyMe.StatisticsTable.begin(); it!=copyMe.StatisticsTable.end(); it++){
-        vector <char*> temp;
+        vector <string> temp;
         for(int i=0; i< it->first.size(); i++){
-            temp.push_back(it->first[i]); 
+            temp.push_back(string(it->first[i])); 
         }  
-        map <char*, ll, cmp_str> tempMap; 
+        map <string, ll> tempMap; 
         for(auto it1 = it->second.begin(); it1 != it->second.end(); it1++){ 
             tempMap.insert(make_pair(it1->first,it1->second));  
         }
@@ -33,10 +34,10 @@ Statistics::~Statistics()
 //Adds the relation to the Statistics object. 
 void Statistics::AddRel(char *relName, int numTuples)
 {
-    vector<char*> addRelName;
-    addRelName.push_back(relName); 
-    map<char*, ll , cmp_str> temp; 
-    temp.insert(make_pair((char*)"total", numTuples)); 
+    vector<string> addRelName;
+    addRelName.push_back(string(relName)); 
+    map<string, ll > temp; 
+    temp.insert(make_pair((char*)"total", numTuples));  
     StatisticsTable.insert(make_pair(addRelName, temp));   
 }
 
@@ -44,8 +45,8 @@ void Statistics::AddRel(char *relName, int numTuples)
 //Exits the program if relation doesn't exist.
 void Statistics::AddAtt(char *relName, char *attName, int numDistincts)
 {
-    vector<char*> tableName; 
-    tableName.push_back(relName); 
+    vector<string> tableName; 
+    tableName.push_back(string(relName)); 
     if(StatisticsTable.find(tableName)== StatisticsTable.end()){
         cerr << "Relation "<<relName << " doesn't exist!!!\n"; 
         exit(1);  
@@ -64,26 +65,30 @@ void Statistics::AddAtt(char *relName, char *attName, int numDistincts)
 //Produces a copy of the relation given by "oldName" under "newName". 
 void Statistics::CopyRel(char *oldName, char *newName)
 {
-    vector <char*> temp; 
-    temp.push_back(oldName);     
+    vector <string> temp; 
+    temp.push_back(string(oldName));     
     if(StatisticsTable.find(temp) == StatisticsTable.end()){
         cerr << "Relation " << oldName << " doesn't exist!!\n"; 
         exit(1); 
     }
-    vector <char*> temp2; 
-    map <char*, ll, cmp_str> newMap; 
+    vector <string> temp2; 
+    map <string, ll> newMap; 
     temp2.push_back(newName); 
     for(auto it=StatisticsTable[temp].begin(); it!=StatisticsTable[temp].end(); it++){
-        if(strcmp("total", it->first)==0){
+        if(it->first.compare(string("total"))==0){
             newMap.insert(make_pair(it->first, it->second)); 
             continue; 
         }
-        char* newAtt = new char[100];  
-        newAtt[0] = '\0'; 
-        strcat(newAtt, newName); 
-        strcat(newAtt, "."); 
-        strcat(newAtt, it->first);   
-        newMap.insert(make_pair((char*)newAtt, it->second)); 
+        // char* newAtt = new char[100];  
+        // newAtt[0] = '\0'; 
+        // strcat(newAtt, newName); 
+        // strcat(newAtt, "."); 
+        // strcat(newAtt, it->first);   
+        string newAtt; 
+        newAtt.append(string(newName)); 
+        newAtt.append(string(".")); 
+        newAtt.append(it->first); 
+        newMap.insert(make_pair(newAtt, it->second)); 
     }
     StatisticsTable.insert(make_pair(temp2, newMap));  
 }
@@ -103,23 +108,23 @@ void Statistics::Read(char *fromWhere)
         return; 
     }
     for(ll i=0; i<mapSize; i++){
-        vector<char*> partition; 
+        vector<string> partition; 
         ll partitionSize; 
         fscanf(inFile, "%lld", &partitionSize); 
         for(ll j=0; j<partitionSize; j++){
             char* relName = new char[120]; 
             fscanf(inFile, "%s", relName);
-            partition.push_back(relName); 
+            partition.push_back(string(relName)); 
          }
          ll attsMapSize;
-         map <char*, ll, cmp_str> attsMap; 
+         map <string, ll> attsMap; 
          fscanf(inFile, "%lld", &attsMapSize); 
          for(ll k=0; k<attsMapSize; k++){
              char* attName = new char[100]; 
              ll numDistincts; 
              fscanf(inFile,"%s", attName);
              fscanf(inFile,"%lld",&numDistincts);  
-            attsMap.insert(make_pair(attName, numDistincts)); 
+            attsMap.insert(make_pair(string(attName), numDistincts)); 
          }
          StatisticsTable.insert(make_pair(partition, attsMap));  
     }
@@ -134,12 +139,12 @@ void Statistics::Write(char *fromWhere)
     for(auto it= StatisticsTable.begin(); it!=StatisticsTable.end(); it++){
         fprintf(toFile, "%ld", it->first.size()); 
         for(int i=0; i<it->first.size(); i++){
-            fprintf(toFile, " %s",it->first[i]);  
+            fprintf(toFile, " %s",it->first[i].c_str());  
         }
         fprintf(toFile,"\n"); 
         fprintf(toFile, "%ld ", it->second.size());
         for(auto it1=it->second.begin(); it1!= it->second.end(); it1++){ 
-            fprintf(toFile, "%s %d ", it1->first, it1->second); 
+            fprintf(toFile, "%s %d ", it1->first.c_str(), it1->second); 
         }
         fprintf(toFile, "\n");
     } 
@@ -152,22 +157,22 @@ void Statistics::Write(char *fromWhere)
 void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoin) 
 {
     ll resultingNoOfTuples = (ll)Estimate(parseTree, relNames, numToJoin); 
-    vector< vector<char*> > partitions; 
+    vector< vector<string> > partitions; 
     int res = CheckifRelsExist(relNames, numToJoin, partitions); 
     if(res <= 1){
         return; 
     }
     //join
-    vector<char*> newPartition; 
+    vector<string> newPartition; 
     for(int i=0; i< numToJoin; i++){
-        newPartition.push_back(relNames[i]); 
+        newPartition.push_back(string(relNames[i])); 
     }   
     //During the estimate, the possible changes to Statistics object are stored in tempState. 
     //These changes are committed here. 
-    map <char*, ll, cmp_str> newAtts; 
+    map <string, ll> newAtts; 
     for(int i=0; i< partitions.size(); i++){
        for(auto it=StatisticsTable[partitions[i]].begin();it!= StatisticsTable[partitions[i]].end(); it++){
-           if(strcmp(it->first, "total")==0){
+           if(it->first.compare(string("total"))==0){
                continue;
            }
            newAtts.insert(make_pair(it->first, it->second)); 
@@ -176,7 +181,7 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
     for(int i=0; i< tempState.size(); i++){
         newAtts[tempState[i].first] = tempState[i].second; 
     }
-    newAtts.insert(make_pair((char*)"total", resultingNoOfTuples)); 
+    newAtts.insert(make_pair(string("total"), resultingNoOfTuples)); 
     StatisticsTable.insert(make_pair(newPartition, newAtts)); 
     for(int i=0; i< partitions.size(); i++){
         StatisticsTable.erase(partitions[i]); 
@@ -187,7 +192,7 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 //Returns the estimated number of output tuples for the given operation(CNF) in parseTree.  
 double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numToJoin)
 {
-    vector< vector<char*> > partitions; 
+    vector< vector<string> > partitions; 
     int res = CheckifRelsExist(relNames, numToJoin, partitions);  
     if(res == -1){
         cerr << "Given relations cannot be used for estimation!!!\n";
@@ -221,8 +226,8 @@ void Statistics::PrintStatistics(){
 //This method checks if the given relations given are consistent with the existing relation Partitions
 //in the StatisticsTable. Returns 1 if the operation type is Selection. 
 //Returns an integer >1 if the operation type is Join. Returns -1 if the given set of relNames is invalid. 
-int Statistics::CheckifRelsExist(char* relNames[], int numToJoin, vector <vector <char*> > &partitions){
-    map <char*, int,cmp_str> relNamesMap; 
+int Statistics::CheckifRelsExist(char* relNames[], int numToJoin, vector <vector <string> > &partitions){
+    map <string, int> relNamesMap; 
     int size1 = numToJoin, opType =0 ; 
     for(int i=0; i<numToJoin; i++){
         ++relNamesMap[relNames[i]];
@@ -261,7 +266,7 @@ int Statistics::CheckifRelsExist(char* relNames[], int numToJoin, vector <vector
 
 //It takes the selectivity factor as input and 
 //returns the total number of output tuples for the given operation. 
-double Statistics::getNumOfTuples(vector <vector <char*> > &partitions, double fraction){ 
+double Statistics::getNumOfTuples(vector <vector <string> > &partitions, double fraction){ 
     double total = fraction; 
     for (int i=0; i<partitions.size(); i++){
         total *= (double)StatisticsTable[partitions[i]]["total"];
@@ -270,7 +275,7 @@ double Statistics::getNumOfTuples(vector <vector <char*> > &partitions, double f
 }   
 
 //Processes the given orList and returns the selectivity factor of the entire orList.
-double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, vector <vector <char*> > &partitions){
+double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, vector <vector <string> > &partitions){
     if(myOrlist == nullptr){
         return 1.0; 
     }
@@ -338,7 +343,7 @@ double Statistics::processOrlist(ll numOfinputTuples, struct OrList* myOrlist, v
 
 //This method checks if the given CNF in the parseTree is consistent with the relations in the relNames. 
 //Returns 1 if consistent. Exits the program if inconsistent. 
-int Statistics::checkAndGetAttVal(vector <vector <char*> > &partitions, char* attName){
+int Statistics::checkAndGetAttVal(vector <vector <string> > &partitions, char* attName){
     int val=-2; 
     for(int i=0; i<partitions.size(); i++){
         if(StatisticsTable.find(partitions[i]) != StatisticsTable.end() && \

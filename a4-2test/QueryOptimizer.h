@@ -115,5 +115,9 @@ class QueryOptimizer{
 
         void constructQueryPlanTree();
 
+        TreeNode* selectFileNode(string tableName, int &outPipeNumber);
+
+        TreeNode* getJoinNodes(string expression, int &PipeNumber);
+
 }; 
 #endif 

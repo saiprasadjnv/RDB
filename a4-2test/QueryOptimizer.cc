@@ -5,6 +5,9 @@ using namespace std;
 
 void printAndList1(struct AndList *currAndlist){
     // cout << "currAndList address in print: "<< currAndlist << "\n";
+    if(currAndlist == NULL){
+        cout << "Empty andlist\n"; 
+    }
 	while(currAndlist != NULL){
 		struct OrList* currOrlst = currAndlist->left; 
 		while(currOrlst != NULL){
@@ -212,6 +215,7 @@ void QueryOptimizer::optimizeQuery(){
     GetAndProcessRelationInfo(); 
     GetJoinsInfo();
 
+    printf("Calling construct query\n"); // << "Calling Construct Query Plan\n"; 
     //Applying the selection predicate on the relations
     // myStats->PrintStatistics();
     for(auto it=Relations.begin();it!=Relations.end();it++){
@@ -253,6 +257,7 @@ void QueryOptimizer::optimizeQuery(){
             entry->tableList.insert(make_pair(it->second.first,it->first));
         }
         currDPList.insert(make_pair(table,entry));
+        // constructQueryPlanTree();
         printDPList(currDPList);
     }else{
     // Join query 
@@ -341,7 +346,10 @@ void QueryOptimizer::optimizeQuery(){
         currDPList.clear();
     }
     printDPList(prevDPList);
+    currDPList = prevDPList; 
     }
+    cout << "Calling construct query plan\n"; 
+    constructQueryPlanTree(); 
     // myStats->PrintStatistics();
 }
 
@@ -438,7 +446,46 @@ TreeNode::TreeNode(){
 }
 
 void TreeNode::printNode(){
+   
+    cout << "\n------------------------------------------------------------------------------------------------\n";
+    cout << "Left Rel: "<< leftRel <<"; Right Rel: "<<rightRel << "; Operarion type=" << operation << "\n";  
+    cout << "Left Pipe: "<<pipeLeft << "; Right Pipe: "<< pipeRight <<"; outpipe: "<<pipeOut << "\n"; 
 
+    if(selOp!=nullptr || selOp!=NULL){
+        cout << "Printing CNF\n"; 
+        selOp->Print();     
+    }
+    if(outSchema!=nullptr){
+        cout << "OutSchema:\n"; 
+        outSchema->Print(); 
+    } 
+    if(LeftinSchema!=nullptr){
+        cout << "LeftinSchema:\n"; 
+        LeftinSchema->Print(); 
+    } 
+    if(RightinSchema!=nullptr){
+        cout << "LeftinSchema:\n"; 
+        RightinSchema->Print(); 
+    } 
+    if(groupAtts!= nullptr){
+        cout << "Grouping Attributes\n"; 
+        groupAtts->Print(); 
+    }
+    
+    if(treeAndList!=NULL){
+        cout << "Printing AndList\n"; 
+        printAndList1(treeAndList); 
+    }
+
+    if(keepMe != nullptr){
+        cout << "Number of input attributes = "<<numAttsInput <<"; Number of output attributes = "<<numAttsOutput <<"\n"; 
+        cout << "Atts To keep: \n"; 
+        for(int i=0; i<numAttsOutput; i++){
+            cout << keepMe[i] << " "; 
+        }
+        cout << "\n"; 
+    }
+     cout << "------------------------------------------------------------------------------------------------\n";
 }
 
 void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
@@ -466,7 +513,7 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
         rightOperand.code=3; 
         rightOperand.value= mySchemaAtts[0].name; 
         ComparisonOp tempOp; 
-        tempOp.code= Equals; 
+        tempOp.code= EQUALS; 
         tempOp.left = &leftOperand; 
         tempOp.right = &rightOperand; 
         OrList tempOrlist; 
@@ -484,10 +531,10 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
             cerr << "Invalid Relation name given for select !!\n"; 
             exit(1); 
         }
-        if(Relations.find(treeNode->leftRel)==Relations.end()){
-            cerr << "Relation not found in the map!!\n"; 
-            exit(1); 
-        }
+        // if(Relations.find(treeNode->leftRel)==Relations.end()){
+        //     cerr << "Relation not found in the map!!\n"; 
+        //     exit(1); 
+        // }
         if(treeNode->LeftinSchema==nullptr){
             cerr << "Mandatory input schema is missing!!\n";
             exit(1);
@@ -525,11 +572,14 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
         int newidx=0;
         for(int i=0;i<leftNumAtts;i++){
             outSchemaAtts[newidx].myType=leftRelAtts[i].myType;
+            cout << "leftRelAtt: " << leftRelAtts[i].name << "\n"; 
+            outSchemaAtts[newidx].name = new char[30]; 
             strcpy(outSchemaAtts[newidx].name,leftRelAtts[i].name);
             newidx++;
         }
         for(int j=0;j<rightNumAtts;j++){
             outSchemaAtts[newidx].myType=rightRelAtts[j].myType;
+            outSchemaAtts[newidx].name = new char[30];  
             strcpy(outSchemaAtts[newidx].name,rightRelAtts[j].name);
             newidx++;
         }
@@ -555,5 +605,111 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
 }
 
 void QueryOptimizer::constructQueryPlanTree(){
+    cout << "Current DPlist size: " << currDPList.size() <<  "\n";
+    if(currDPList.size()!=0){
+        vector<string> finalInvolvedRels = currDPList.begin()->first; 
+        string expression = currDPList.begin()->second->expression;
+        int PipeNumber=0; 
+        // cout << "Size of finalInvolvedRels: " << finalInvolvedRels.size() <<"\n"; 
+        if(finalInvolvedRels.size()==1){
+            //SelectOperation, No joins involved
+            cout << "Relation" << finalInvolvedRels[0] << "\n"; 
+            string tableName = currDPList[finalInvolvedRels]->tableList[finalInvolvedRels[0]]; 
+            TreeNode *rootNode = selectFileNode(tableName, PipeNumber);  
+        }else{
+            //Join Operation is involved 
+            TreeNode* rootJoin;  
+            rootJoin = getJoinNodes(expression, PipeNumber); 
+            rootNode = rootJoin; 
+        }
+    }
 
+
+}   
+
+TreeNode* QueryOptimizer::getJoinNodes(string expression, int &PipeNumber){ 
+    cout << "Expression : " << expression << "\n"; 
+    if(expression[0]!= '('){
+        size_t index = expression.find_first_of(",");
+        string leftRel = expression.substr(0, index); 
+        string rightRel = expression.substr(index+1, expression.size()- (index+1)); 
+        string leftRelName = getRelationNameFromAlias(leftRel); 
+        string rightRelName = getRelationNameFromAlias(rightRel);
+        TreeNode *leftRoot = selectFileNode(leftRelName, PipeNumber); 
+        TreeNode *rightRoot = selectFileNode(rightRelName, PipeNumber); 
+        TreeNode *JoinNode = new TreeNode; 
+        JoinNode->operation = Join; 
+        JoinNode->left = leftRoot; 
+        JoinNode->right = rightRoot; 
+        JoinNode->LeftinSchema = leftRoot->outSchema; 
+        JoinNode->RightinSchema = rightRoot->outSchema; 
+        JoinNode->pipeLeft = leftRoot->pipeOut; 
+        JoinNode->pipeRight = rightRoot->pipeOut; 
+        JoinNode->pipeOut = PipeNumber++; 
+        JoinNode->leftRel = leftRel; 
+        JoinNode->rightRel = rightRel;   
+        InitTreeNode(JoinNode); 
+        JoinNode->printNode(); 
+        return JoinNode; 
+    }else{
+        string innerExpression = expression.substr(1,expression.size()-2); 
+        cout << "Inner expression: " << innerExpression << "\n"; 
+        if(innerExpression.find_last_of(')')== -1){
+            cout << "Inside first if"; 
+            return getJoinNodes(innerExpression, PipeNumber); 
+        }else{
+            size_t lastindex = innerExpression.find_last_of(')'); 
+            string childJoinExpression = innerExpression.substr(1,innerExpression.size()-1 + lastindex); 
+            string rightRel = innerExpression.substr(lastindex+1, innerExpression.size()-(lastindex+1)); 
+            string rightRelName = getRelationNameFromAlias(rightRel); 
+            TreeNode *JoinNode = new TreeNode; 
+            TreeNode *leftRoot = getJoinNodes(childJoinExpression, PipeNumber); 
+            TreeNode *rightRoot = selectFileNode(rightRelName, PipeNumber); 
+            string myleftRel = leftRoot->leftRel; 
+            myleftRel.append(","); 
+            myleftRel.append(leftRoot->rightRel); 
+            JoinNode->operation = Join; 
+            JoinNode->left = leftRoot; 
+            JoinNode->right = rightRoot; 
+            JoinNode->LeftinSchema = leftRoot->outSchema; 
+            JoinNode->RightinSchema = rightRoot->outSchema; 
+            JoinNode->pipeLeft = leftRoot->pipeOut; 
+            JoinNode->pipeRight = rightRoot->pipeOut; 
+            JoinNode->pipeOut = PipeNumber++; 
+            JoinNode->leftRel = myleftRel; 
+            JoinNode->rightRel = rightRel;   
+            InitTreeNode(JoinNode); 
+            JoinNode->printNode(); 
+            return JoinNode; 
+        }
+    }
+
+}
+
+TreeNode* QueryOptimizer::selectFileNode(string tableName, int &PipeNumber){
+    TreeNode *tempNode = new TreeNode; 
+    TreeNode *rootForSelect; 
+    tempNode->operation = SelectFile; 
+    tempNode->leftRel = tableName;  
+    tempNode->pipeOut = PipeNumber++; 
+    tempNode->left = nullptr; 
+    tempNode->right = nullptr;  
+    cout << "***************tableName: "<< tableName << "\n"; 
+    InitTreeNode(tempNode); 
+    rootForSelect = tempNode; 
+    tempNode->printNode(); 
+    if(Relations[tableName].second!=NULL){
+        TreeNode *pipeNode = new TreeNode; 
+        pipeNode->operation = SelectPipe; 
+        pipeNode->leftRel = Relations[tableName].first; 
+        pipeNode->LeftinSchema = tempNode->outSchema; 
+        pipeNode->left = tempNode; 
+        pipeNode->right = nullptr; 
+        pipeNode->pipeOut = PipeNumber++; 
+        pipeNode->pipeLeft = tempNode->pipeOut; 
+        InitTreeNode(pipeNode); 
+        pipeNode->printNode();
+        rootForSelect = pipeNode; 
+    }
+    return rootForSelect; 
 }

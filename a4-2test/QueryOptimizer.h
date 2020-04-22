@@ -41,6 +41,9 @@ class TreeNode{
         int numAttsInput; //Projection
         int numAttsOutput;  //Projection
         Schema *nodeSchema; //Duplicate removal
+        Schema* LeftinSchema;
+        Schema* RightinSchema;
+        Schema* outSchema;
         Function *nodeFunc; //Sum, Groupby
         OrderMaker *groupAtts;  //Groupby
         opType operation;
@@ -48,6 +51,8 @@ class TreeNode{
         TreeNode *left;
         TreeNode *right;
         TreeNode *parent;
+        string leftRel; // In select file, fill leftRel with the relation name
+        string rightRel;
     
     TreeNode();
     void printNode();
@@ -101,6 +106,9 @@ class QueryOptimizer{
         void PrintMaps(); 
 
         void printDPList(map< vector <string> , struct dpEntry* > toPrint);
+        
+        //Initializes the node with the required information a/c to opType. 
+        void InitTreeNode(TreeNode *thisNode); 
 
 }; 
 #endif 

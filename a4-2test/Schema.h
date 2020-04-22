@@ -57,6 +57,10 @@ public:
 	// place a lexicographic ordering on the records using this type of schema
 	int GetSortOrder (OrderMaker &order);
 
+
+	//Adds the alias name at the beginning of each attribute. 
+	void RenameAliasAttrbts(char* alias); 
+	
 	~Schema ();
 
 };

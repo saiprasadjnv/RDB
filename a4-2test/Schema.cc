@@ -155,8 +155,20 @@ Schema :: Schema (char *fName, char *relName) {
 	fclose (foo);
 }
 
+void Schema::RenameAliasAttrbts(char* alias){
+	if(alias == NULL || alias==nullptr){
+		return; 
+	}
+	char* tempAtt = new char[40];
+	strcpy(tempAtt, alias);
+	strcat(tempAtt,".");
+	for(int i=0; i<numAtts; i++){
+		strcat(tempAtt, myAtts[i].name); 
+		myAtts[i].name = tempAtt; 
+	}
+}
+
 Schema :: ~Schema () {
 	delete [] myAtts;
 	myAtts = 0;
 }
-

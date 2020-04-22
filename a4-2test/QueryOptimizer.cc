@@ -410,13 +410,97 @@ TreeNode::TreeNode(){
     selOp=nullptr;
     keepMe=nullptr;
     nodeSchema=nullptr;
+    LeftinSchema= nullptr; 
+    RightinSchema= nullptr; 
+    outSchema = nullptr; 
     nodeFunc=nullptr;
     groupAtts=nullptr;
     left=nullptr;
     right=nullptr;
     parent=nullptr;
+    leftRel = "";
+    rightRel="";
+    treeAndList=NULL; 
 }
 
 void TreeNode::printNode(){
+
+}
+
+void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
+    opType nodeOperation = treeNode->operation;
+    
+    if(nodeOperation==SelectFile){
+        //Select File
+        if(treeNode->leftRel.size()==0){
+            cerr << "Invalid file for select !!\n"; 
+            exit(1); 
+        }
+        if(Relations.find(treeNode->leftRel)==Relations.end()){
+            cerr << "Relation not found in the map!!\n"; 
+            exit(1); 
+        }
+        treeNode->outSchema = new Schema("catalog",(char*)treeNode->leftRel.c_str()); 
+        if(strcmp(treeNode->leftRel.c_str(),Relations[treeNode->leftRel].first.c_str())!=0){
+            treeNode->outSchema->RenameAliasAttrbts((char*)Relations[treeNode->leftRel].first.c_str()); 
+        }
+        Attribute *mySchemaAtts = treeNode->outSchema->GetAtts();
+        Operand leftOperand; 
+        Operand rightOperand; 
+        leftOperand.code=3; 
+        leftOperand.value= mySchemaAtts[0].name;  
+        rightOperand.code=3; 
+        rightOperand.value= mySchemaAtts[0].name; 
+        ComparisonOp tempOp; 
+        tempOp.code= Equals; 
+        tempOp.left = &leftOperand; 
+        tempOp.right = &rightOperand; 
+        OrList tempOrlist; 
+        tempOrlist.left = &tempOp; 
+        tempOrlist.rightOr = NULL; 
+        AndList tempAndlist; 
+        tempAndlist.left = &tempOrlist; 
+        tempAndlist.rightAnd = NULL; 
+        treeNode->selOp = new CNF; 
+        treeNode->literal=new Record();
+        treeNode->selOp->GrowFromParseTree(&tempAndlist, treeNode->outSchema, *treeNode->literal); 
+    }else if(nodeOperation==SelectPipe){
+        //Select Pipe
+        if(treeNode->leftRel.size()==0){
+            cerr << "Invalid Relation name given for select !!\n"; 
+            exit(1); 
+        }
+        if(Relations.find(treeNode->leftRel)==Relations.end()){
+            cerr << "Relation not found in the map!!\n"; 
+            exit(1); 
+        }
+        if(treeNode->LeftinSchema==nullptr){
+            cerr << "Mandatory input schema is missing!!\n";
+            exit(1);
+        }
+        treeNode->outSchema=treeNode->LeftinSchema;
+        treeNode->literal=new Record();
+        treeNode->selOp=new CNF();
+        treeNode->selOp->GrowFromParseTree(Relations[treeNode->leftRel].second,treeNode->outSchema,*treeNode->literal);
+    }else if(nodeOperation==DuplicateRemoval){
+        //Duplicate Removal
+        if(treeNode->LeftinSchema==nullptr){
+            cerr << "Mandatory input schema is missing!!\n";
+            exit(1);
+        }
+        treeNode->outSchema=treeNode->LeftinSchema;
+    }else if(nodeOperation==Join){
+        //Join operation
+        if(treeNode->leftRel.size()==0 || treeNode->rightRel.size()==0){
+            cerr << "One of the two input relation names are missing!!\n";
+            exit(1);
+        }
+        if(treeNode->LeftinSchema==nullptr || treeNode->RightinSchema==nullptr){
+            cerr << "One of the input schemas is missing!!\n";
+            exit(1);
+        }
+        
+
+    }
 
 }

@@ -41,7 +41,7 @@ class TreeNode{
         int numAttsInput; //Projection
         int numAttsOutput;  //Projection
         Schema *nodeSchema; //Duplicate removal
-        Schema* LeftinSchema;
+        Schema* LeftinSchema; // Mandatory for single child nodes as well
         Schema* RightinSchema;
         Schema* outSchema;
         Function *nodeFunc; //Sum, Groupby
@@ -53,6 +53,7 @@ class TreeNode{
         TreeNode *parent;
         string leftRel; // In select file, fill leftRel with the relation name
         string rightRel;
+        struct AndList *treeAndList;
     
     TreeNode();
     void printNode();

@@ -572,7 +572,6 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
         int newidx=0;
         for(int i=0;i<leftNumAtts;i++){
             outSchemaAtts[newidx].myType=leftRelAtts[i].myType;
-            cout << "leftRelAtt: " << leftRelAtts[i].name << "\n"; 
             outSchemaAtts[newidx].name = new char[30]; 
             strcpy(outSchemaAtts[newidx].name,leftRelAtts[i].name);
             newidx++;
@@ -628,7 +627,7 @@ void QueryOptimizer::constructQueryPlanTree(){
 }   
 
 TreeNode* QueryOptimizer::getJoinNodes(string expression, int &PipeNumber){ 
-    cout << "Expression : " << expression << "\n"; 
+    // cout << "Expression : " << expression << "\n"; 
     if(expression[0]!= '('){
         size_t index = expression.find_first_of(",");
         string leftRel = expression.substr(0, index); 
@@ -653,14 +652,15 @@ TreeNode* QueryOptimizer::getJoinNodes(string expression, int &PipeNumber){
         return JoinNode; 
     }else{
         string innerExpression = expression.substr(1,expression.size()-2); 
-        cout << "Inner expression: " << innerExpression << "\n"; 
+        // cout << "Inner expression: " << innerExpression << "\n"; 
         if(innerExpression.find_last_of(')')== -1){
-            cout << "Inside first if"; 
+            // cout << "Inside first if"; 
             return getJoinNodes(innerExpression, PipeNumber); 
         }else{
             size_t lastindex = innerExpression.find_last_of(')'); 
-            string childJoinExpression = innerExpression.substr(1,innerExpression.size()-1 + lastindex); 
-            string rightRel = innerExpression.substr(lastindex+1, innerExpression.size()-(lastindex+1)); 
+            string childJoinExpression = innerExpression.substr(0, lastindex+1); 
+            string rightRel = innerExpression.substr(lastindex+2, innerExpression.size()-(lastindex+1)); 
+            // cout << "###########rightRelName: " << rightRel << "\n"; 
             string rightRelName = getRelationNameFromAlias(rightRel); 
             TreeNode *JoinNode = new TreeNode; 
             TreeNode *leftRoot = getJoinNodes(childJoinExpression, PipeNumber); 

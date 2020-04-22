@@ -96,6 +96,8 @@ class QueryOptimizer{
 
         struct AndList* appendAndList(struct AndList* from,struct AndList* to);
 
+        string getRelationNameFromAlias(string alias);
+
 
     public: 
         TreeNode *rootNode;
@@ -110,6 +112,8 @@ class QueryOptimizer{
         
         //Initializes the node with the required information a/c to opType. 
         void InitTreeNode(TreeNode *thisNode); 
+
+        void constructQueryPlanTree();
 
 }; 
 #endif 

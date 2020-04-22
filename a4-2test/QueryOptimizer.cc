@@ -405,6 +405,20 @@ struct AndList* QueryOptimizer::appendAndList(struct AndList* from,struct AndLis
     return to; 
 }
 
+string QueryOptimizer::getRelationNameFromAlias(string alias){
+    string name="";
+    if(alias.size()==0){
+        return name;
+    }
+    for(auto it=Relations.begin();it!=Relations.end();it++){
+        if(it->second.first.compare(alias)==0){
+            name=it->first;
+            break;
+        }
+    }
+    return name;
+}
+
 TreeNode::TreeNode(){
     literal=nullptr;
     selOp=nullptr;
@@ -481,7 +495,11 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
         treeNode->outSchema=treeNode->LeftinSchema;
         treeNode->literal=new Record();
         treeNode->selOp=new CNF();
-        treeNode->selOp->GrowFromParseTree(Relations[treeNode->leftRel].second,treeNode->outSchema,*treeNode->literal);
+        string tableName=getRelationNameFromAlias(treeNode->leftRel);
+        if(tableName.size()!=0){
+            treeNode->selOp->GrowFromParseTree(Relations[tableName].second,treeNode->outSchema,*treeNode->literal);
+        }
+        
     }else if(nodeOperation==DuplicateRemoval){
         //Duplicate Removal
         if(treeNode->LeftinSchema==nullptr){
@@ -499,8 +517,43 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
             cerr << "One of the input schemas is missing!!\n";
             exit(1);
         }
-        
-
+        Attribute *leftRelAtts= treeNode->LeftinSchema->GetAtts();
+        Attribute *rightRelAtts=treeNode->RightinSchema->GetAtts();
+        int leftNumAtts=treeNode->LeftinSchema->GetNumAtts();
+        int rightNumAtts=treeNode->RightinSchema->GetNumAtts();
+        Attribute *outSchemaAtts=new Attribute[leftNumAtts+rightNumAtts];
+        int newidx=0;
+        for(int i=0;i<leftNumAtts;i++){
+            outSchemaAtts[newidx].myType=leftRelAtts[i].myType;
+            strcpy(outSchemaAtts[newidx].name,leftRelAtts[i].name);
+            newidx++;
+        }
+        for(int j=0;j<rightNumAtts;j++){
+            outSchemaAtts[newidx].myType=rightRelAtts[j].myType;
+            strcpy(outSchemaAtts[newidx].name,rightRelAtts[j].name);
+            newidx++;
+        }
+        treeNode->outSchema=new Schema("Join_schema",leftNumAtts+rightNumAtts,outSchemaAtts);
+        //Parsing leftRel - a,b,c..
+        char *currLeftRel=new char[30];
+        strcpy(currLeftRel,treeNode->leftRel.c_str());
+        char* currRel;
+        currRel=strtok(currLeftRel,",");
+        while(currRel!=NULL){
+            vector<string> relNames;
+            relNames.push_back(string(currRel));
+            relNames.push_back(treeNode->rightRel);
+            treeNode->treeAndList=appendAndList(Joins[relNames].second,treeNode->treeAndList);
+            relNames.clear();
+            currRel=strtok(NULL,",");
+        }
+        treeNode->literal=new Record();
+        treeNode->selOp=new CNF();
+        treeNode->selOp->GrowFromParseTree(treeNode->treeAndList,treeNode->LeftinSchema,treeNode->RightinSchema,*treeNode->literal);
     }
+
+}
+
+void QueryOptimizer::constructQueryPlanTree(){
 
 }

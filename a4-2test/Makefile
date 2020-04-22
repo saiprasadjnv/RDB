@@ -8,20 +8,25 @@ endif
 
 classes= Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o Function.o SelectFile.o SelectPipe.o Project.o DuplicateRemoval.o WriteOut.o Sum.o GroupBy.o JoinUtil.o Join.o Statistics.o QueryOptimizer.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o
 
-all: main
+all: a42.out QueryOptimizerTest
 
-main: $(classes) main.o
-	$(CC) -o main $(classes) main.o -ll -lpthread
+a42.out: $(classes) main.o
+	$(CC) -o a42.out $(classes) main.o -ll -lpthread
 	
-main.o : main.cc
-	$(CC) -g -c main.cc
-
+QueryOptimizerTest: QueryOptimizerTest.cc
+	$(CC) -o QueryOptimizerTest $(classes) QueryOptimizerTest.cc  -ll -lpthread -lgtest
 
 statisticstest: $(classes) Statisticstest.o 
 	$(CC) -o statisticstest $(classes) Statisticstest.o  -ll -lpthread -lgtest
 
+main.o : main.cc
+	$(CC) -g -c main.cc
+
 QueryOptimizer.o: QueryOptimizer.cc
 	$(CC) -g -c QueryOptimizer.cc
+
+QueryOptimizerTest.o: QueryOptimizerTest.cc
+	$(CC) -g -c QueryOptimizerTest.cc
 
 Statisticstest.o: Statisticstest.cc
 	$(CC) -g -c Statisticstest.cc

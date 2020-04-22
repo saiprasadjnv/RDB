@@ -22,18 +22,30 @@ struct queryParsedInfo{
     int distinctFunc; 
 }; 
 
+struct dpEntry{
+    ll size;
+    ll cost;
+    string expression;
+    struct AndList *andList;
+    map <string,string> tableList;
+};
+
 class QueryOptimizer{
     private: 
         struct queryParsedInfo* myQueryParams; 
         Statistics* myStats; 
 
-        //Key: Vector of Relation Names a/c to catalog
-        //Value: <pair of string of aliases, CNF Andlist> 
+        //Key: Vector of alias Names a/c to catalog
+        //Value: <pair of string of TableNames, CNF Andlist> 
         map <vector <string> , pair< vector<string>, struct AndList* > > Joins; 
 
         //Key: Relation Name a/c to catalog
         //Value: <pair of Alias Name, CNF Andlist> 
-        map <string, pair <string, struct AndList* > > Relations; 
+        map <string, pair <string, struct AndList* > > Relations;
+
+        map< vector <string> , struct dpEntry* > prevDPList; 
+
+        map< vector <string> , struct dpEntry* > currDPList; 
         
         //This function gets all information regarding all the relations involved in the query. 
         //Initializes the Relations map with the corresponding "Select CNF". 
@@ -51,11 +63,20 @@ class QueryOptimizer{
         //Utility funtion used to find the relation to which the attribute belongs to. 
         string whichRelation(char* attribute); 
 
+        vector<string> performSetDifference(vector<string> setFrom,vector<string> setFrom2);
+
+        struct AndList* appendAndList(struct AndList* from,struct AndList* to);
+
+
     public: 
         QueryOptimizer(); 
         QueryOptimizer(void *args); 
 
+        void optimizeQuery();
+
         void PrintMaps(); 
+
+        void printDPList(map< vector <string> , struct dpEntry* > toPrint);
 
 }; 
 #endif 

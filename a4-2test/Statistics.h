@@ -96,6 +96,8 @@ public:
 
 	//Processes the given orList and returns the selectivity factor of the entire orList. 
 	double processOrlist(ll numOfinputTuples, struct OrList* myOrlist, vector <vector <string> > &partitions); 
+
+	ll getSizeofRelation(vector<string> relName); 
 };
 
 #endif

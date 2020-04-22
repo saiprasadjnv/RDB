@@ -392,3 +392,10 @@ int Statistics::checkAndGetAttVal(vector <vector <string> > &partitions, char* a
     }
     return val; 
 }
+
+ll Statistics::getSizeofRelation(vector<string> relName){
+    if(StatisticsTable.find(relName)!=StatisticsTable.end()){
+        return StatisticsTable[relName][string("total")];
+    }
+    return -1;
+}

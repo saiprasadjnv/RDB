@@ -50,37 +50,39 @@ int main () {
 
 	yyparse(); 
 	struct TableList* currTable = tables;
-	cout << "\nPrinting table: \n";
-	while (currTable != NULL)
-	{
-		/* code */
-		cout << currTable->tableName << " alias: " << currTable->aliasAs << " "; 
-		currTable = currTable->next; 
-	}
-	cout << "\n"; 
+	// cout << "\nPrinting table: \n";
+	// while (currTable != NULL)
+	// {
+	// 	/* code */
+	// 	cout << currTable->tableName << " alias: " << currTable->aliasAs << " "; 
+	// 	currTable = currTable->next; 
+	// }
+	// cout << "\n"; 
 
-	cout << "Printing function: \n"; 
-	printFunction(finalFunction); 
-	cout << "\n";
-	cout << "Printing final And List: \n"; 
-	printAndList(boolean);  
-    cout <<"\n";
-	cout << "Printing groupingAtts:\n ";
-	while(groupingAtts!=NULL){
-		cout << groupingAtts->name <<",";
-		groupingAtts=groupingAtts->next;
-	}
-	cout << "\n";
-	cout<< "Printing selection attributes: \n";
-	while (attsToSelect!=NULL){
-		cout << attsToSelect->name<<",";
-		attsToSelect=attsToSelect->next;
-	}
-	cout << "\n";
-	cout << "DistinctAtts: " << distinctAtts << " DistinctFunctions: " << distinctFunc << "\n";
+	// cout << "Printing function: \n"; 
+	// printFunction(finalFunction); 
+	// cout << "\n";
+	// cout << "Printing final And List: \n"; 
+	// printAndList(boolean);  
+    // cout <<"\n";
+	// cout << "Printing groupingAtts:\n ";
+	// while(groupingAtts!=NULL){
+	// 	cout << groupingAtts->name <<",";
+	// 	groupingAtts=groupingAtts->next;
+	// }
+	// cout << "\n";
+	// cout<< "Printing selection attributes: \n";
+	// while (attsToSelect!=NULL){
+	// 	cout << attsToSelect->name<<",";
+	// 	attsToSelect=attsToSelect->next;
+	// }
+	// cout << "\n";
+	// cout << "DistinctAtts: " << distinctAtts << " DistinctFunctions: " << distinctFunc << "\n";
 	
 	QueryOptimizer myQO; 
-	myQO.PrintMaps(); 
+	myQO.optimizeQuery();
+	// myQO.PrintMaps(); 
+	return 0;
 }
 
 

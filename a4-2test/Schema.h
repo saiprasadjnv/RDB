@@ -61,6 +61,9 @@ public:
 	//Adds the alias name at the beginning of each attribute. 
 	void RenameAliasAttrbts(char* alias); 
 	
+	//Prints the schema 
+	void Print(); 
+	
 	~Schema ();
 
 };

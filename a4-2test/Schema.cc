@@ -163,8 +163,26 @@ void Schema::RenameAliasAttrbts(char* alias){
 	strcpy(tempAtt, alias);
 	strcat(tempAtt,".");
 	for(int i=0; i<numAtts; i++){
+		strcpy(tempAtt, alias);
+		strcat(tempAtt,".");
 		strcat(tempAtt, myAtts[i].name); 
-		myAtts[i].name = tempAtt; 
+		strcpy(myAtts[i].name,tempAtt); 
+		tempAtt[0]=0;
+	}
+}
+
+void Schema::Print(){
+	// cout << "Printing Schema:\n"; 
+	for(int i=0; i<numAtts; i++){ 
+		cout << "\tAtt " << myAtts[i].name << ":\t"; 
+		if(myAtts[i].myType == Int){
+			cout << "INT\n";
+		}else if(myAtts[i].myType == Double){
+			cout << "DOUBLE\n"; 
+		}else{
+			cout << "STRING\n"; 
+		}
+
 	}
 }
 

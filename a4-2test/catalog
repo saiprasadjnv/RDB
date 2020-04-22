@@ -100,3 +100,19 @@ l_shipmode String
 l_comment String
 END
 
+BEGIN
+n.nation
+nation.tbl
+n.n_nationkey Int
+n.n_name String
+n.n_regionkey Int
+n.n_comment String
+END
+
+BEGIN
+r.region
+region.tbl
+r.r_regionkey Int
+r.r_name String
+r.r_comment String
+END

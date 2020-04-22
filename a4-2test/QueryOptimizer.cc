@@ -405,3 +405,19 @@ struct AndList* QueryOptimizer::appendAndList(struct AndList* from,struct AndLis
     return to; 
 }
 
+TreeNode::TreeNode(){
+    literal=nullptr;
+    selOp=nullptr;
+    keepMe=nullptr;
+    nodeSchema=nullptr;
+    nodeFunc=nullptr;
+    groupAtts=nullptr;
+    left=nullptr;
+    right=nullptr;
+    parent=nullptr;
+}
+
+void TreeNode::printNode(){
+
+}
+

@@ -10,7 +10,10 @@
 #include <stdio.h>
 #include <map>
 #include <vector>
+#include "Function.h"
 using namespace std;
+
+enum opType {SelectFile,SelectPipe,Project,Join,DuplicateRemoval,Sum,Groupby,WriteOut};
 
 struct queryParsedInfo{
     struct TableList* tables; 
@@ -28,6 +31,26 @@ struct dpEntry{
     string expression;
     struct AndList *andList;
     map <string,string> tableList;
+};
+
+class TreeNode{
+    public:
+        Record *literal; // Select Pipe, Select File, Join
+        CNF *selOp;  // Select Pipe, Select File, Join
+        int *keepMe; // Projection
+        int numAttsInput; //Projection
+        int numAttsOutput;  //Projection
+        Schema *nodeSchema; //Duplicate removal
+        Function *nodeFunc; //Sum, Groupby
+        OrderMaker *groupAtts;  //Groupby
+        opType operation;
+        int pipeLeft,pipeRight,pipeOut;
+        TreeNode *left;
+        TreeNode *right;
+        TreeNode *parent;
+    
+    TreeNode();
+    void printNode();
 };
 
 class QueryOptimizer{
@@ -69,6 +92,7 @@ class QueryOptimizer{
 
 
     public: 
+        TreeNode *rootNode;
         QueryOptimizer(); 
         QueryOptimizer(void *args); 
 

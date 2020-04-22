@@ -104,7 +104,7 @@ TEST(StatisticsTest,CheckIfRelsExists){
     Statistics s;
     s.AddRel("test",1000);
     s.AddAtt("test","key",10);
-    vector<vector<char*>> partition;
+    vector<vector<string>> partition;
     int res=s.CheckifRelsExist(relName,1,partition);
     ASSERT_EQ(-1,res);
 }
@@ -113,8 +113,8 @@ TEST(StatisticsTest,CheckAndGetAttValSuccessTest){
     Statistics s;
     s.AddRel("test",1000);
     s.AddAtt("test","key",10);
-    vector<vector<char*>> partition;
-    vector<char*> subPartition;
+    vector<vector<string>> partition;
+    vector<string> subPartition;
     subPartition.push_back("test");
     partition.push_back(subPartition);
     int whichPartition;
@@ -126,8 +126,8 @@ TEST(StatisticsTest,CheckAndGetAttValFailureTest){
     Statistics s;
     s.AddRel("test",1000);
     s.AddAtt("test","key",10);
-    vector<vector<char*>> partition;
-    vector<char*> subPartition;
+    vector<vector<string>> partition;
+    vector<string> subPartition;
     subPartition.push_back("test1");
     partition.push_back(subPartition);
     int whichPartition;

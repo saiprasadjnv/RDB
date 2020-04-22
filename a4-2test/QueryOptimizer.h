@@ -86,8 +86,6 @@ class QueryOptimizer{
         //If a pair of relations has no common attributes, it initializes with nullptr. 
         void GetJoinsInfo(); 
 
-        //This function processes the given orList, returns the vector of the involved relations. 
-        vector <string> processOrlist(OrList *procesMe); 
 
         //Utility funtion used to find the relation to which the attribute belongs to. 
         string whichRelation(char* attribute); 
@@ -97,7 +95,6 @@ class QueryOptimizer{
         struct AndList* appendAndList(struct AndList* from,struct AndList* to);
 
         string getRelationNameFromAlias(string alias);
-
 
     public: 
         TreeNode *rootNode;
@@ -119,5 +116,7 @@ class QueryOptimizer{
 
         TreeNode* getJoinNodes(string expression, int &PipeNumber);
 
+        //This function processes the given orList, returns the vector of the involved relations. 
+        vector <string> processOrlist(OrList *procesMe); 
 }; 
 #endif 

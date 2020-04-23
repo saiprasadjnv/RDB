@@ -39,6 +39,9 @@ QueryOptimizer::QueryOptimizer(){
     myStats = new Statistics; 
     // cout << "Initializing Stats\n"; 
     myStats->Read("InitalStatitics.txt"); 
+    rootNode=nullptr;
+    numOfJoinPredicates=0;
+    numOfSelectPredicates=0;
     // cout << "Initializing Stats Finished!!\n";  
     // myStats->PrintStatistics(); 
     // GetAndProcessRelationInfo(); 
@@ -49,9 +52,14 @@ QueryOptimizer::QueryOptimizer(void *args){
     myQueryParams = (queryParsedInfo*)args; 
     myStats = new Statistics; 
     myStats->Read("InitalStatitics.txt"); 
+    rootNode=nullptr;
+    numOfJoinPredicates=0;
+    numOfSelectPredicates=0;
     // GetAndProcessRelationInfo(); 
     // GetJoinsInfo(); 
 }
+
+QueryOptimizer::~QueryOptimizer(){}
 
 
 //This function gets all information regarding all the relations involved in the query. 
@@ -83,6 +91,7 @@ void QueryOptimizer::GetAndProcessRelationInfo(){
             }else{
                 Relations[relsInvolved[0]].second = myNewAnd; 
             }
+            numOfSelectPredicates++;
         }
         currAndList = currAndList->rightAnd; 
     } 
@@ -131,6 +140,7 @@ void QueryOptimizer::GetJoinsInfo(){
             }else{
                 Joins[aliases].second = myNewAnd; 
             }
+            numOfJoinPredicates++;
         }
         currAndList = currAndList->rightAnd; 
     } 
@@ -782,7 +792,7 @@ void QueryOptimizer::constructQueryPlanTree(){
             distinctNode->pipeOut=PipeNumber++;
             distinctNode->LeftinSchema=rootNode->outSchema;
             InitTreeNode(distinctNode);
-            distinctNode->printNode();
+            // distinctNode->printNode();
             distinctNode->left=rootNode;
             rootNode=distinctNode;
         }
@@ -816,7 +826,7 @@ void QueryOptimizer::constructQueryPlanTree(){
             func->GrowFromParseTree(myQueryParams->finalFunction,*groupbyNode->LeftinSchema);
             groupbyNode->nodeFunc=func;
             InitTreeNode(groupbyNode);
-            groupbyNode->printNode();
+            // groupbyNode->printNode();
             groupbyNode->left=rootNode;
             rootNode=groupbyNode;
         }
@@ -834,7 +844,7 @@ void QueryOptimizer::constructQueryPlanTree(){
             distinctAttsNode->leftRel=reltn;
             distinctAttsNode->LeftinSchema=rootNode->outSchema;
             InitTreeNode(distinctAttsNode);
-            distinctAttsNode->printNode();
+            // distinctAttsNode->printNode();
             distinctAttsNode->left=rootNode;
             rootNode=distinctAttsNode;
 
@@ -856,7 +866,7 @@ void QueryOptimizer::constructQueryPlanTree(){
             func->GrowFromParseTree(myQueryParams->finalFunction,*sumNode->LeftinSchema);
             sumNode->nodeFunc=func;
             InitTreeNode(sumNode);
-            sumNode->printNode();
+            // sumNode->printNode();
             sumNode->left=rootNode;
             rootNode=sumNode;
         }
@@ -874,7 +884,7 @@ void QueryOptimizer::constructQueryPlanTree(){
             }
             projectNode->leftRel=reltn;
             InitTreeNode(projectNode);
-            projectNode->printNode();
+            // projectNode->printNode();
             projectNode->left=rootNode;
             rootNode=projectNode;
         }
@@ -905,7 +915,7 @@ TreeNode* QueryOptimizer::getJoinNodes(string expression, int &PipeNumber){
         JoinNode->leftRel = leftRel; 
         JoinNode->rightRel = rightRel;   
         InitTreeNode(JoinNode); 
-        JoinNode->printNode(); 
+        // JoinNode->printNode(); 
         return JoinNode; 
     }else{
         string innerExpression = expression.substr(1,expression.size()-2); 
@@ -936,7 +946,7 @@ TreeNode* QueryOptimizer::getJoinNodes(string expression, int &PipeNumber){
             JoinNode->leftRel = myleftRel; 
             JoinNode->rightRel = rightRel;   
             InitTreeNode(JoinNode); 
-            JoinNode->printNode(); 
+            // JoinNode->printNode(); 
             return JoinNode; 
         }
     }
@@ -953,7 +963,7 @@ TreeNode* QueryOptimizer::selectFileNode(string tableName, int &PipeNumber){
     tempNode->right = nullptr;  
     InitTreeNode(tempNode); 
     rootForSelect = tempNode; 
-    rootForSelect->printNode(); 
+    // rootForSelect->printNode(); 
     if(Relations[tableName].second!=NULL){
         TreeNode *pipeNode = new TreeNode; 
         pipeNode->operation = SelectPipe; 
@@ -964,8 +974,28 @@ TreeNode* QueryOptimizer::selectFileNode(string tableName, int &PipeNumber){
         pipeNode->pipeOut = PipeNumber++; 
         pipeNode->pipeLeft = tempNode->pipeOut; 
         InitTreeNode(pipeNode); 
-        pipeNode->printNode();
+        // pipeNode->printNode();
         rootForSelect = pipeNode; 
     }
     return rootForSelect; 
+}
+
+void QueryOptimizer::printQueryPlanTree(){
+    if(rootNode!=nullptr){
+        cout << "\nNumber of selects: "<< numOfSelectPredicates << "\n";
+        cout << "Number of Joins: " << numOfJoinPredicates << "\n";
+        cout << "PRINTING TREE IN ORDER:\n";
+        TreeNode *currRootNode=rootNode;
+        recPrintQueryPlanTree(currRootNode);
+    }
+}
+
+void QueryOptimizer::recPrintQueryPlanTree(TreeNode *rootNode){
+    if(rootNode==nullptr || rootNode==NULL){
+        return;
+    }
+    recPrintQueryPlanTree(rootNode->left);
+    rootNode->printNode();
+    recPrintQueryPlanTree(rootNode->right);
+
 }

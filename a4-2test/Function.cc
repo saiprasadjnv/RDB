@@ -2,6 +2,7 @@
 #include "Function.h"
 #include <iostream>
 #include <stdlib.h>
+#include <algorithm>
 Function :: Function () {
 
 	opList = new Arithmatic[MAX_DEPTH];
@@ -201,7 +202,84 @@ void Function :: GrowFromParseTree (struct FuncOperator *parseTree, Schema &mySc
 }
 
 void Function :: Print () {
+	Arithmatic *currOpList=opList;
+	for(int i=0;i<numOps;i++){
+		string optn;
+		switch(currOpList[i].myOp){
+			case 0:
+				optn="PushInt";
+				cout << "Operand Type: " << optn << "\n";
+				cout << "Attribute Position: "<< currOpList[i].recInput << "\n";
+				break;
+			case 1:
+				optn="PushDouble";
+				cout << "Operand Type: " << optn << "\n";
+				cout << "Attribute Position: "<< currOpList[i].recInput << "\n";
+				break;
+			case 2:
+				optn="ToDouble";
+				cout << "Operand Type: " << optn << "\n";
+				cout << "Attribute Position: "<< currOpList[i].recInput << "\n";
+				break;
+			case 3:
+				optn="ToDouble2Down";
+				cout << "Operand Type: " << optn << "\n";
+				cout << "Attribute Position: "<< currOpList[i].recInput << "\n";
+				break;
+			case 4:
+				optn="IntUnaryMinus";
+				cout << "Operator: " << optn << "\n";
+				break;
+			case 5:
+				optn="IntMinus";
+				cout << "Operator: " << optn << "\n";
+				break;
+			case 6:
+				optn="IntPlus";
+				cout << "Operator: " << optn << "\n";
+				break;
+			case 7:
+				optn="IntDivide";
+				cout << "Operator: " << optn << "\n";
+				break;
+			case 8:
+				optn="IntMultiply";
+				cout << "Operator: " << optn << "\n";
+				break;
+			case 9:
+				optn="DoubleUnaryMinus";
+				cout << "Operator: " << optn << "\n";
+				break;
+			case 10:
+				optn="DoubleMinus";
+				cout << "Operator: " << optn << "\n";
+				break;
+			case 11:
+				optn="DoublePlus";
+				cout << "Operator: " << optn << "\n";
+				break;
+			case 12:
+				optn="DoubleDivide";
+				cout << "Operator: " << optn << "\n";
+				break;
+			case 13:
+				optn="DoubleMultiply";
+				cout << "Operator: " << optn << "\n";
+				break;
+			default:
+				optn="";
+				break;
 
+		}
+		if(optn.size()>0){
+			string opint="Int",opDbl="Double";
+			if(search(optn.begin(),optn.end(),opint.begin(),opint.end())!=optn.end() && currOpList[i].litInput!=NULL){
+				cout << "litInput: " << *((int*)(currOpList[i].litInput)) << "\n";
+			}else if(search(optn.begin(),optn.end(),opDbl.begin(),opDbl.end())!=optn.end() && currOpList[i].litInput!=NULL){
+				cout << "litInput: " << *((double*)(currOpList[i].litInput)) << "\n";
+			} 
+		}
+	}
 }
 
 Type Function :: Apply (Record &toMe, int &intResult, double &doubleResult) {

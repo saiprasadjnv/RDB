@@ -83,6 +83,7 @@ int main () {
 	
 	QueryOptimizer myQO; 
 	myQO.optimizeQuery();
+	myQO.printQueryPlanTree();
 	// myQO.PrintMaps(); 
 	return 0;
 }

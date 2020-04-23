@@ -64,6 +64,7 @@ class QueryOptimizer{
     private: 
         struct queryParsedInfo* myQueryParams; 
         Statistics* myStats; 
+        int numOfJoinPredicates,numOfSelectPredicates;
 
         //Key: Vector of alias Names a/c to catalog
         //Value: <pair of string of TableNames, CNF Andlist> 
@@ -97,9 +98,12 @@ class QueryOptimizer{
 
         string getRelationNameFromAlias(string alias);
 
+        void recPrintQueryPlanTree(TreeNode *rootNode);
+
     public: 
         TreeNode *rootNode;
         QueryOptimizer(); 
+        ~QueryOptimizer();
         QueryOptimizer(void *args); 
 
         void optimizeQuery();
@@ -119,5 +123,7 @@ class QueryOptimizer{
 
         //This function processes the given orList, returns the vector of the involved relations. 
         vector <string> processOrlist(OrList *procesMe); 
+
+        void printQueryPlanTree();
 }; 
 #endif 

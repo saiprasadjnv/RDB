@@ -356,4 +356,9 @@ Type Function :: Apply (Record &toMe, int &intResult, double &doubleResult) {
 	
 }
 
+//Method that returns the type of the return value. 1 for Int and 0 for double.
+int Function::getReturnTypeofFunction(){
+	return returnsInt;
+}
+
 

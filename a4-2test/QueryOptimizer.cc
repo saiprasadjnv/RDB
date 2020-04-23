@@ -35,7 +35,7 @@ QueryOptimizer::QueryOptimizer(){
     myQueryParams->groupingAtts = groupingAtts; 
     myQueryParams->attsToSelect = attsToSelect; 
     myQueryParams->distinctAtts = distinctAtts; 
-    myQueryParams->distinctFunc; 
+    myQueryParams->distinctFunc = distinctFunc; 
     myStats = new Statistics; 
     // cout << "Initializing Stats\n"; 
     myStats->Read("InitalStatitics.txt"); 
@@ -213,11 +213,8 @@ void QueryOptimizer::PrintMaps(){
 */
 void QueryOptimizer::optimizeQuery(){
     GetAndProcessRelationInfo(); 
-    GetJoinsInfo();
-
-    printf("Calling construct query\n"); // << "Calling Construct Query Plan\n"; 
+    GetJoinsInfo(); 
     //Applying the selection predicate on the relations
-    // myStats->PrintStatistics();
     for(auto it=Relations.begin();it!=Relations.end();it++){
         if(it->second.second!=NULL){
             vector<char*> rels;
@@ -258,7 +255,7 @@ void QueryOptimizer::optimizeQuery(){
         }
         currDPList.insert(make_pair(table,entry));
         // constructQueryPlanTree();
-        printDPList(currDPList);
+        // printDPList(currDPList);
     }else{
     // Join query 
      for(auto it1=Joins.begin();it1!=Joins.end();it1++){
@@ -345,10 +342,10 @@ void QueryOptimizer::optimizeQuery(){
         prevDPList=currDPList;
         currDPList.clear();
     }
-    printDPList(prevDPList);
+    // printDPList(prevDPList);
     currDPList = prevDPList; 
     }
-    cout << "Calling construct query plan\n"; 
+    // cout << "Calling construct query plan\n"; 
     constructQueryPlanTree(); 
     // myStats->PrintStatistics();
 }
@@ -442,34 +439,99 @@ TreeNode::TreeNode(){
     parent=nullptr;
     leftRel = "";
     rightRel="";
-    treeAndList=NULL; 
+    treeAndList=NULL;
+    pipeLeft=-1;
+    pipeRight=-1;
+    pipeOut=-1; 
 }
 
 void TreeNode::printNode(){
    
-    cout << "\n------------------------------------------------------------------------------------------------\n";
-    cout << "Left Rel: "<< leftRel <<"; Right Rel: "<<rightRel << "; Operarion type=" << operation << "\n";  
-    cout << "Left Pipe: "<<pipeLeft << "; Right Pipe: "<< pipeRight <<"; outpipe: "<<pipeOut << "\n"; 
-
-    if(selOp!=nullptr || selOp!=NULL){
-        cout << "Printing CNF\n"; 
-        selOp->Print();     
+    cout << "\n********************************************************************************************\n";
+    switch (operation){
+        case SelectFile:
+            cout << "SELECT FILE operation\n ";
+            break;
+        case SelectPipe:
+            cout << "SELECT PIPE operation\n ";
+            break;
+        case Project:
+            cout << "PROJECT operation\n ";
+            break;
+        case Join:
+            cout << "JOIN operation\n ";
+            break;
+        case DuplicateRemoval:
+            cout << "DISTINCT operation\n ";
+            break;
+        case Sum:
+            cout << "SUM operation\n ";
+            break;
+        case Groupby:
+            cout << "GROUPBY operation\n ";
+            break;
+        default:
+            cout << "Invalid operation\n ";
+            break;
     }
+    // if(leftRel.size()>0){
+    //     cout << "Left Rel: "<< leftRel << ";";
+    // }
+    // if(rightRel.size()>0){
+    //     cout <<" Right Rel: "<<rightRel ;
+    // }
+    // cout << "\n";
+    if(operation==Join){
+        if(pipeLeft>=0){
+        cout << "Left Input Pipe: "<<pipeLeft << " \n";
+        } 
+        if(pipeRight>=0){
+            cout << "Right Input Pipe: "<< pipeRight << "\n";
+        }
+        if(pipeOut>=0){
+            cout << "Output pipe: "<<pipeOut << " \n";
+        }
+        // cout << "\n";
+
+    }else{
+        if(pipeLeft>=0){
+            cout << "Input Pipe: "<<pipeLeft << "\n ";
+        } 
+        if(pipeRight>=0){
+            cout << "Right Pipe: "<< pipeRight << " \n";
+        }
+        if(pipeOut>=0){
+            cout << "Output pipe: "<<pipeOut << "\n ";
+        }
+        // cout << "\n";
+
+    }
+
     if(outSchema!=nullptr){
-        cout << "OutSchema:\n"; 
+        cout << "Output Schema:\n"; 
         outSchema->Print(); 
     } 
-    if(LeftinSchema!=nullptr){
-        cout << "LeftinSchema:\n"; 
-        LeftinSchema->Print(); 
-    } 
-    if(RightinSchema!=nullptr){
-        cout << "LeftinSchema:\n"; 
-        RightinSchema->Print(); 
-    } 
+
+    if(selOp!=nullptr || selOp!=NULL){
+        cout << "CNF:\n"; 
+        selOp->Print();     
+    }
+    // if(LeftinSchema!=nullptr){
+    //     cout << "LeftinSchema:\n"; 
+    //     LeftinSchema->Print(); 
+    // } 
+    // if(RightinSchema!=nullptr){
+    //     cout << "RightinSchema:\n"; 
+    //     RightinSchema->Print(); 
+    // } 
     if(groupAtts!= nullptr){
-        cout << "Grouping Attributes\n"; 
+        cout << "GROUPING ON\n"; 
         groupAtts->Print(); 
+    }
+
+    if(nodeFunc!=nullptr){
+        cout << "FUNCTION\n";
+        nodeFunc->Print();
     }
     
     if(treeAndList!=NULL){
@@ -485,20 +547,21 @@ void TreeNode::printNode(){
         }
         cout << "\n"; 
     }
-     cout << "------------------------------------------------------------------------------------------------\n";
+     cout << "********************************************************************************************\n";
 }
 
 void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
     opType nodeOperation = treeNode->operation;
+    string AGGREGATE="aggregate";
     
     if(nodeOperation==SelectFile){
         //Select File
         if(treeNode->leftRel.size()==0){
-            cerr << "Invalid file for select !!\n"; 
+            cerr << "Invalid file for selectFile !!\n"; 
             exit(1); 
         }
         if(Relations.find(treeNode->leftRel)==Relations.end()){
-            cerr << "Relation not found in the map!!\n"; 
+            cerr << "Relation not found in the map for SelectFile!!\n"; 
             exit(1); 
         }
         treeNode->outSchema = new Schema("catalog",(char*)treeNode->leftRel.c_str()); 
@@ -528,7 +591,7 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
     }else if(nodeOperation==SelectPipe){
         //Select Pipe
         if(treeNode->leftRel.size()==0){
-            cerr << "Invalid Relation name given for select !!\n"; 
+            cerr << "Invalid Relation name given for selectPiep !!\n"; 
             exit(1); 
         }
         // if(Relations.find(treeNode->leftRel)==Relations.end()){
@@ -536,7 +599,7 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
         //     exit(1); 
         // }
         if(treeNode->LeftinSchema==nullptr){
-            cerr << "Mandatory input schema is missing!!\n";
+            cerr << "Mandatory input schema is missing for SelectPipe!!\n";
             exit(1);
         }
         treeNode->outSchema=treeNode->LeftinSchema;
@@ -550,18 +613,18 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
     }else if(nodeOperation==DuplicateRemoval){
         //Duplicate Removal
         if(treeNode->LeftinSchema==nullptr){
-            cerr << "Mandatory input schema is missing!!\n";
+            cerr << "Mandatory input schema is missing for Duplicate!!\n";
             exit(1);
         }
         treeNode->outSchema=treeNode->LeftinSchema;
     }else if(nodeOperation==Join){
         //Join operation
         if(treeNode->leftRel.size()==0 || treeNode->rightRel.size()==0){
-            cerr << "One of the two input relation names are missing!!\n";
+            cerr << "One of the two input relation names are missing for Join!!\n";
             exit(1);
         }
         if(treeNode->LeftinSchema==nullptr || treeNode->RightinSchema==nullptr){
-            cerr << "One of the input schemas is missing!!\n";
+            cerr << "One of the input schemas is missing for Join!!\n";
             exit(1);
         }
         Attribute *leftRelAtts= treeNode->LeftinSchema->GetAtts();
@@ -582,9 +645,9 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
             strcpy(outSchemaAtts[newidx].name,rightRelAtts[j].name);
             newidx++;
         }
-        treeNode->outSchema=new Schema("Join_schema",leftNumAtts+rightNumAtts,outSchemaAtts);
-        //Parsing leftRel - a,b,c..
-        char *currLeftRel=new char[30];
+        treeNode->outSchema=new Schema("join_sch",leftNumAtts+rightNumAtts,outSchemaAtts);
+        //Parsing leftRel - Ex: a,b,c..
+        char *currLeftRel=new char[40];
         strcpy(currLeftRel,treeNode->leftRel.c_str());
         char* currRel;
         currRel=strtok(currLeftRel,",");
@@ -592,6 +655,7 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
             vector<string> relNames;
             relNames.push_back(string(currRel));
             relNames.push_back(treeNode->rightRel);
+            sort(relNames.begin(),relNames.end());
             treeNode->treeAndList=appendAndList(Joins[relNames].second,treeNode->treeAndList);
             relNames.clear();
             currRel=strtok(NULL,",");
@@ -599,12 +663,95 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
         treeNode->literal=new Record();
         treeNode->selOp=new CNF();
         treeNode->selOp->GrowFromParseTree(treeNode->treeAndList,treeNode->LeftinSchema,treeNode->RightinSchema,*treeNode->literal);
+    }else if(nodeOperation==Sum){
+        //Sum aggregate operator
+        if(treeNode->LeftinSchema==nullptr){
+            cerr << "Input schemas is missing for Sum!!\n";
+            exit(1);
+        }
+        if(treeNode->nodeFunc==nullptr){
+            cerr << "Mandatory input aggregate function is missing for Sum!!\n";
+            exit(1);
+        }
+        int returnType=treeNode->nodeFunc->getReturnTypeofFunction();
+        Attribute outAtts;
+        if(returnType==1){
+            //Int
+            outAtts={(char*)AGGREGATE.c_str(),Int};
+        }else{
+            //Double
+            outAtts={(char*)AGGREGATE.c_str(),Double};
+        }
+        treeNode->outSchema=new Schema("sum_sch",1,&outAtts);
+    }else if(nodeOperation==Groupby){
+        //Groupby operator
+        if(treeNode->nodeFunc==nullptr){
+            cerr << "Input function is missing for Groupby!!\n";
+            exit(1);
+        }
+        if(treeNode->LeftinSchema==nullptr){
+            cerr << "Input schema is missing for Groupby!!\n";
+            exit(1);
+        }
+        if(treeNode->groupAtts==nullptr){
+            cerr << "Grouping orderMaker is missing!!\n";
+            exit(1);
+        }
+        int *putAttsHere=new int[30];
+        Type *putTypesHere=new Type[30];
+        int numOfAtts;
+        treeNode->groupAtts->getAttributes(putAttsHere,putTypesHere,numOfAtts);
+        vector<Attribute> *outAtts=new vector<Attribute>;
+        Attribute* inputSchemaAtts=treeNode->LeftinSchema->GetAtts();
+        int inputSchemaNumAtts=treeNode->LeftinSchema->GetNumAtts();
+        int returnType=treeNode->nodeFunc->getReturnTypeofFunction();
+        if(returnType==1){
+            //Int
+            outAtts->push_back(Attribute{(char*)AGGREGATE.c_str(),Int});
+        }else{
+            //Double
+            outAtts->push_back(Attribute{(char*)AGGREGATE.c_str(),Double});
+        }
+        for(int i=0;i<numOfAtts;i++){
+            outAtts->push_back(Attribute{inputSchemaAtts[putAttsHere[i]].name,inputSchemaAtts[putAttsHere[i]].myType});
+        }
+        treeNode->outSchema=new Schema("groupby_sch",numOfAtts+1,outAtts->data());
+    }else if(nodeOperation==Project){
+        //Project operator
+        if(treeNode->LeftinSchema==nullptr){
+            cerr << "Input schema is missing for Project!!\n";
+            exit(1);
+        }
+        vector<Attribute> outAtts;
+        vector<int> *keepMe=new vector<int>;
+        int numofInputAtts;
+        if(treeNode->LeftinSchema->Find((char*)AGGREGATE.c_str())!=-1){
+            outAtts.push_back(Attribute{(char*)AGGREGATE.c_str(),treeNode->LeftinSchema->FindType((char*)AGGREGATE.c_str())});
+            keepMe->push_back(treeNode->LeftinSchema->Find((char*)AGGREGATE.c_str()));
+        }
+        if(myQueryParams->attsToSelect!=nullptr || myQueryParams->attsToSelect!=NULL){
+            struct NameList* curLst= myQueryParams->attsToSelect;
+            while(curLst!=NULL){
+                if(curLst->name!=NULL and treeNode->LeftinSchema->Find(curLst->name)!=-1){
+                    outAtts.push_back(Attribute{curLst->name,treeNode->LeftinSchema->FindType(curLst->name)});
+                    keepMe->push_back(treeNode->LeftinSchema->Find(curLst->name));
+                    curLst=curLst->next;
+                }
+            }
+
+        }
+        if(outAtts.size()>0){
+            numofInputAtts=treeNode->LeftinSchema->GetNumAtts();
+            treeNode->outSchema=new Schema("project_sch",outAtts.size(),outAtts.data());
+            treeNode->keepMe=keepMe->data();
+            treeNode->numAttsInput=numofInputAtts;
+            treeNode->numAttsOutput=outAtts.size();
+        }
     }
 
 }
 
 void QueryOptimizer::constructQueryPlanTree(){
-    cout << "Current DPlist size: " << currDPList.size() <<  "\n";
     if(currDPList.size()!=0){
         vector<string> finalInvolvedRels = currDPList.begin()->first; 
         string expression = currDPList.begin()->second->expression;
@@ -612,14 +759,124 @@ void QueryOptimizer::constructQueryPlanTree(){
         // cout << "Size of finalInvolvedRels: " << finalInvolvedRels.size() <<"\n"; 
         if(finalInvolvedRels.size()==1){
             //SelectOperation, No joins involved
-            cout << "Relation" << finalInvolvedRels[0] << "\n"; 
+            // cout << "Relation" << finalInvolvedRels[0] << "\n"; 
             string tableName = currDPList[finalInvolvedRels]->tableList[finalInvolvedRels[0]]; 
-            TreeNode *rootNode = selectFileNode(tableName, PipeNumber);  
+            TreeNode *rootSelect = selectFileNode(tableName, PipeNumber); 
+            rootNode=rootSelect;
         }else{
             //Join Operation is involved 
             TreeNode* rootJoin;  
             rootJoin = getJoinNodes(expression, PipeNumber); 
             rootNode = rootJoin; 
+        }
+        //Distinct operator for aggregate function
+        if(myQueryParams->distinctFunc){
+            TreeNode *distinctNode=new TreeNode();
+            distinctNode->operation=DuplicateRemoval;
+            string reltn=rootNode->leftRel;
+            if(rootNode->rightRel.size()>0){
+                reltn.append(",").append(rootNode->rightRel);
+            }
+            distinctNode->leftRel=reltn;
+            distinctNode->pipeLeft=rootNode->pipeOut;
+            distinctNode->pipeOut=PipeNumber++;
+            distinctNode->LeftinSchema=rootNode->outSchema;
+            InitTreeNode(distinctNode);
+            distinctNode->printNode();
+            distinctNode->left=rootNode;
+            rootNode=distinctNode;
+        }
+
+        //Groupby node
+        if(myQueryParams->groupingAtts!=NULL){
+            TreeNode *groupbyNode=new TreeNode();
+            groupbyNode->operation=Groupby;
+            groupbyNode->pipeLeft=rootNode->pipeOut;
+            groupbyNode->pipeOut=PipeNumber++;
+            groupbyNode->LeftinSchema=rootNode->outSchema;
+            string reltn=rootNode->leftRel;
+            if(rootNode->rightRel.size()>0){
+                reltn.append(",").append(rootNode->rightRel);
+            }
+            groupbyNode->leftRel=reltn;
+            OrderMaker *groupbyOrderMaker=new OrderMaker();
+            vector<int> setTheseAtts;
+            vector<Type> setTheseTypes;
+            struct NameList *curgroupbyAtts=myQueryParams->groupingAtts;
+            while(curgroupbyAtts!=NULL){
+                if(curgroupbyAtts->name!=NULL && groupbyNode->LeftinSchema->Find(curgroupbyAtts->name)!=-1){
+                    setTheseAtts.push_back(groupbyNode->LeftinSchema->Find(curgroupbyAtts->name));
+                    setTheseTypes.push_back(groupbyNode->LeftinSchema->FindType(curgroupbyAtts->name));
+                    curgroupbyAtts=curgroupbyAtts->next;
+                }
+            }
+            groupbyOrderMaker->setAttributes(setTheseAtts.data(),setTheseTypes.data(),setTheseTypes.size());
+            groupbyNode->groupAtts=groupbyOrderMaker;
+            Function *func=new Function();
+            func->GrowFromParseTree(myQueryParams->finalFunction,*groupbyNode->LeftinSchema);
+            groupbyNode->nodeFunc=func;
+            InitTreeNode(groupbyNode);
+            groupbyNode->printNode();
+            groupbyNode->left=rootNode;
+            rootNode=groupbyNode;
+        }
+
+        //Distinct node for attributes
+        if(myQueryParams->distinctAtts){
+            TreeNode *distinctAttsNode=new TreeNode();
+            distinctAttsNode->operation=DuplicateRemoval;
+            distinctAttsNode->pipeLeft=rootNode->pipeOut;
+            distinctAttsNode->pipeOut=PipeNumber++;
+            string reltn=rootNode->leftRel;
+            if(rootNode->rightRel.size()>0){
+                reltn.append(",").append(rootNode->rightRel);
+            }
+            distinctAttsNode->leftRel=reltn;
+            distinctAttsNode->LeftinSchema=rootNode->outSchema;
+            InitTreeNode(distinctAttsNode);
+            distinctAttsNode->printNode();
+            distinctAttsNode->left=rootNode;
+            rootNode=distinctAttsNode;
+
+        }
+
+        //Sum node for pure aggregation without groupby
+        if(myQueryParams->groupingAtts==NULL && myQueryParams->finalFunction!=NULL){
+            TreeNode *sumNode=new TreeNode();
+            sumNode->operation=Sum;
+            string reltn=rootNode->leftRel;
+            if(rootNode->rightRel.size()>0){
+                reltn.append(",").append(rootNode->rightRel);
+            }
+            sumNode->leftRel=reltn;
+            sumNode->LeftinSchema=rootNode->outSchema;
+            sumNode->pipeLeft=rootNode->pipeOut;
+            sumNode->pipeOut=PipeNumber++;
+            Function *func=new Function();
+            func->GrowFromParseTree(myQueryParams->finalFunction,*sumNode->LeftinSchema);
+            sumNode->nodeFunc=func;
+            InitTreeNode(sumNode);
+            sumNode->printNode();
+            sumNode->left=rootNode;
+            rootNode=sumNode;
+        }
+
+        //Project node
+        if(myQueryParams->attsToSelect!=NULL || rootNode->nodeFunc!=nullptr){
+            TreeNode *projectNode=new TreeNode();
+            projectNode->operation=Project;
+            projectNode->pipeLeft=rootNode->pipeOut;
+            projectNode->pipeOut=PipeNumber++;
+            projectNode->LeftinSchema=rootNode->outSchema;
+            string reltn=rootNode->leftRel;
+            if(rootNode->rightRel.size()>0){
+                reltn.append(",").append(rootNode->rightRel);
+            }
+            projectNode->leftRel=reltn;
+            InitTreeNode(projectNode);
+            projectNode->printNode();
+            projectNode->left=rootNode;
+            rootNode=projectNode;
         }
     }
 
@@ -694,10 +951,9 @@ TreeNode* QueryOptimizer::selectFileNode(string tableName, int &PipeNumber){
     tempNode->pipeOut = PipeNumber++; 
     tempNode->left = nullptr; 
     tempNode->right = nullptr;  
-    cout << "***************tableName: "<< tableName << "\n"; 
     InitTreeNode(tempNode); 
     rootForSelect = tempNode; 
-    tempNode->printNode(); 
+    rootForSelect->printNode(); 
     if(Relations[tableName].second!=NULL){
         TreeNode *pipeNode = new TreeNode; 
         pipeNode->operation = SelectPipe; 

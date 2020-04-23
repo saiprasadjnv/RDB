@@ -11,6 +11,7 @@
 #include <map>
 #include <vector>
 #include "Function.h"
+#include "Defs.h"
 using namespace std;
 
 enum opType {SelectFile,SelectPipe,Project,Join,DuplicateRemoval,Sum,Groupby,WriteOut};

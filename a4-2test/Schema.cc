@@ -166,8 +166,11 @@ void Schema::RenameAliasAttrbts(char* alias){
 		strcpy(tempAtt, alias);
 		strcat(tempAtt,".");
 		strcat(tempAtt, myAtts[i].name); 
+		delete []myAtts[i].name; 
+		myAtts[i].name = new char[40]; 
 		strcpy(myAtts[i].name,tempAtt); 
-		tempAtt[0]=0;
+		delete tempAtt; 
+		tempAtt = new char[40]; 
 	}
 }
 

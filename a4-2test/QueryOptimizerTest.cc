@@ -1,7 +1,6 @@
 #include "gtest/gtest.h"
 #include <iostream>
 #include "QueryOptimizer.h"
-#include "QueryOptimizer.h"
 #include "ParseTree.h"
 #include "vector"
 using namespace std;

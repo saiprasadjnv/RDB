@@ -191,7 +191,12 @@ string QueryOptimizer::whichRelation(char* attribute){
         }
     }
 
-    return newString;
+    if(newString.size()>0){
+        return newString;
+    }else{
+        cerr << "Given attribute " << attribute <<" is not found in any relations available!!\n";
+        exit(1);
+    }
 }
 
 
@@ -223,6 +228,7 @@ void QueryOptimizer::PrintMaps(){
 */
 void QueryOptimizer::optimizeQuery(){
     GetAndProcessRelationInfo(); 
+    validateQuery();
     GetJoinsInfo(); 
     //Applying the selection predicate on the relations
     for(auto it=Relations.begin();it!=Relations.end();it++){
@@ -997,5 +1003,32 @@ void QueryOptimizer::recPrintQueryPlanTree(TreeNode *rootNode){
     recPrintQueryPlanTree(rootNode->left);
     rootNode->printNode();
     recPrintQueryPlanTree(rootNode->right);
+
+}
+
+void QueryOptimizer::validateQuery(){
+    if(myQueryParams->attsToSelect!=NULL && myQueryParams->attsToSelect!=nullptr){
+        struct NameList *currAttsToSelect=myQueryParams->attsToSelect;
+        while(currAttsToSelect!=NULL){
+            int res=myStats->verifyAttributeInRelations(string(currAttsToSelect->name));
+            if(res==-1){
+                cerr << "Given selection attribute "<< currAttsToSelect->name << " not found in any relation!!\n";
+                exit(1);
+            }
+            currAttsToSelect=currAttsToSelect->next;
+        }
+    }
+
+    if(myQueryParams->groupingAtts!=NULL && myQueryParams->groupingAtts!=nullptr){
+        struct NameList *currGroupingAtts=myQueryParams->groupingAtts;
+        while(currGroupingAtts!=NULL){
+            int res=myStats->verifyAttributeInRelations(string(currGroupingAtts->name));
+            if(res==-1){
+                cerr << "Given grouping attribute "<< currGroupingAtts->name << " not found in any relation!!\n";
+                exit(1);
+            }
+            currGroupingAtts=currGroupingAtts->next;
+        }
+    }
 
 }

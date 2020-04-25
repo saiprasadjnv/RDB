@@ -125,5 +125,7 @@ class QueryOptimizer{
         vector <string> processOrlist(OrList *procesMe); 
 
         void printQueryPlanTree();
+
+        void validateQuery();
 }; 
 #endif 

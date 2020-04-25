@@ -98,6 +98,8 @@ public:
 	double processOrlist(ll numOfinputTuples, struct OrList* myOrlist, vector <vector <string> > &partitions); 
 
 	ll getSizeofRelation(vector<string> relName); 
+
+	int verifyAttributeInRelations(string attName);
 };
 
 #endif

@@ -399,3 +399,19 @@ ll Statistics::getSizeofRelation(vector<string> relName){
     }
     return -1;
 }
+
+int Statistics::verifyAttributeInRelations(string attName){
+    int retrnVal=-1;
+    if(attName.size()<=0){
+        return retrnVal;
+    }
+    for(auto it=StatisticsTable.begin();it!=StatisticsTable.end();it++){
+        if(it->second.find(attName)!=it->second.end()){
+            retrnVal=1;
+            break;
+        }
+    }
+
+    return retrnVal;
+    
+}

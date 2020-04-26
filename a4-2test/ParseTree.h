@@ -11,6 +11,13 @@
 #define GREATER_THAN 6
 #define EQUALS 7
 
+#define SELECTOP 1
+#define CREATEOP 2
+#define INSERTOP 3
+#define DROPOP 4
+#define SETOP 5
+#define UPDATEOP 6
+
 // used in computational (funcional) expressions
 struct FuncOperand {
 
@@ -95,6 +102,28 @@ struct AndList {
         // note that this can be NULL if the right is a disjunction
         struct AndList *rightAnd;
 
+};
+
+struct SchemaAttributes {
+        
+        //Attribute name
+        char* name;
+
+        //type of the attribute
+        int type;
+        
+        //Attributes to the right 
+        struct SchemaAttributes *next;
+
+};
+
+struct SortAttributes {
+        
+        // attribute name
+        char* name;
+
+        //attributes to the right
+        struct SortAttributes *next;
 };
 
 #endif

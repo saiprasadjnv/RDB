@@ -19,6 +19,11 @@ extern struct NameList *groupingAtts; // grouping atts (NULL if no grouping)
 extern struct NameList *attsToSelect; // the set of attributes in the SELECT (NULL if no such atts)
 extern int distinctAtts; // 1 if there is a DISTINCT in a non-aggregate query 
 extern int distinctFunc;  // 1
+extern char *fileType;
+extern struct SchemaAttributes *schemaAttributes;
+extern struct SortAttributes *sortAttributes;
+extern char *fileName;
+extern int operationType;
 
 void printFunction(struct FuncOperator *currFunction){
 	if(currFunction == NULL){ 
@@ -49,15 +54,16 @@ void printAndList(struct AndList *currAndlist){
 int main () {
 
 	yyparse(); 
-	// struct TableList* currTable = tables;
-	// cout << "\nPrinting table: \n";
-	// while (currTable != NULL)
-	// {
-	// 	/* code */
-	// 	cout << currTable->tableName << " alias: " << currTable->aliasAs << " "; 
-	// 	currTable = currTable->next; 
-	// }
-	// cout << "\n"; 
+	struct TableList* currTable = tables;
+	cout << "\nPrinting table: \n";
+	while (currTable != NULL)
+	{
+		/* code */
+		// cout << currTable->tableName << " alias: " << currTable->aliasAs << "\n"; 
+		cout << currTable->tableName << "\n"; 
+		currTable = currTable->next; 
+	}
+	cout << "\n"; 
 
 	// cout << "Printing function: \n"; 
 	// printFunction(finalFunction); 
@@ -72,18 +78,43 @@ int main () {
 	// 	currgroupingAtts=currgroupingAtts->next;
 	// }
 	// cout << "\n";
-	// cout<< "Printing selection attributes: \n";
-	// struct NameList *currattsTosel=attsToSelect;
-	// while (currattsTosel!=NULL){
-	// 	cout << currattsTosel->name<<",";
-	// 	currattsTosel=currattsTosel->next;
-	// }
-	// cout << "\n";
+	cout<< "Printing selection attributes: \n";
+	struct NameList *currattsTosel=attsToSelect;
+	while (currattsTosel!=NULL){
+		cout << currattsTosel->name<<",";
+		currattsTosel=currattsTosel->next;
+	}
+	cout << "\n";
 	// cout << "DistinctAtts: " << distinctAtts << " DistinctFunctions: " << distinctFunc << "\n";
 	
-	QueryOptimizer myQO; 
-	myQO.optimizeQuery();
-	myQO.printQueryPlanTree();
+	cout << "\nPrinting cAttributes:\n";
+	struct SchemaAttributes *currCAtts=schemaAttributes;
+	while(currCAtts!=NULL){
+		cout << "Name: " << currCAtts->name << " Type: " << currCAtts->type << "\n";
+		currCAtts=currCAtts->next;
+	}
+
+	if(fileType!=NULL){
+		cout << "\nFileName: "<< fileType << "\n";
+	}
+	cout << "Printing sort attributes:\n";
+	struct SortAttributes *currSortAtts=sortAttributes;
+	while(currSortAtts!=NULL){
+		cout << "Name: " << currSortAtts->name << " \n";
+		currSortAtts=currSortAtts->next;
+	}
+
+	
+	if(fileName!=NULL){
+		cout << "\nloadFrom: "<< fileName << "\n";
+	}
+
+	cout << "OperationType: " << operationType << "\n";
+
+
+	// QueryOptimizer myQO; 
+	// myQO.optimizeQuery();
+	// myQO.printQueryPlanTree();
 	// myQO.PrintMaps(); 
 	return 0;
 }

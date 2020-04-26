@@ -75,6 +75,44 @@ void yyerror(char*s);
 
 ","    	        	return(',');
 
+"CREATE"            return(CREATE);
+
+"TABLE"             return(TABLE);
+
+"HEAP"              return(HEAP);
+
+"SORTED"            return(SORTED);
+
+"ON"                return(ON);
+
+"INTEGER"           return(INTEGER);
+
+"DOUBLE"            return(DBL);
+
+"STRING"            return(STR);
+
+";"                 return(';');
+
+"INSERT"            return(INSERT);
+
+"INTO"              return(INTO);
+
+"DROP"              return(DROP);
+
+"SET"               return(SET);
+
+"OUTPUT"            return(OUTPUT);
+
+"STATISTICS"        return(STATISTICS);
+
+"for"               return(FOR);
+
+"STDOUT"            return(STDOUT);
+
+"NONE"              return(NONE);
+
+"UPDATE"            return(UPDATE);
+
 -?[0-9]+ 	       {yylval.actualChars = strdup(yytext);
   			return(Int); 
 		        }
@@ -85,7 +123,7 @@ void yyerror(char*s);
 
 [A-Za-z][A-Za-z0-9_-]* {yylval.actualChars = strdup(yytext);
   			return(Name);
-			}     
+			}       
 
 [A-Za-z][A-Za-z0-9_-]*\.[A-Za-z][A-Za-z0-9_-]* {yylval.actualChars = strdup(yytext);
   			return(Name);

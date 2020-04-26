@@ -18,6 +18,7 @@
 #define SETOP 5
 #define UPDATEOP 6
 
+
 // used in computational (funcional) expressions
 struct FuncOperand {
 

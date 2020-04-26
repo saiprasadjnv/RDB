@@ -621,7 +621,7 @@ CAtts: Name INTEGER
 {
 	$$ = (struct SchemaAttributes*) malloc(sizeof (struct SchemaAttributes));
 	$$->name=$1;
-	$$->type=2;
+	$$->type=0;
 	$$->next=NULL;
 }
 | Name DBL
@@ -636,14 +636,14 @@ CAtts: Name INTEGER
 {
 	$$ = (struct SchemaAttributes*) malloc(sizeof (struct SchemaAttributes));
 	$$->name=$1;
-	$$->type=4;
+	$$->type=2;
 	$$->next=NULL;
 }
 | Name INTEGER',' CAtts
 {
 	$$ = (struct SchemaAttributes*) malloc(sizeof (struct SchemaAttributes));
 	$$->name=$1;
-	$$->type=2;
+	$$->type=0;
 	$$->next=$4;
 }
 | Name DBL',' CAtts 
@@ -658,7 +658,7 @@ CAtts: Name INTEGER
 {
 	$$ = (struct SchemaAttributes*) malloc(sizeof (struct SchemaAttributes));
 	$$->name=$1;
-	$$->type=4;
+	$$->type=2;
 	$$->next=$4;
 };
 

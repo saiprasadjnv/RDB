@@ -1,0 +1,17 @@
+8
+1 customer
+9 c_acctbal 150000 c_address 150000 c_comment 150000 c_custkey 150000 c_mktsegment 5 c_name 150000 c_nationkey 25 c_phone 150000 total 150000 
+1 lineitem
+17 l_comment 6001215 l_commitdate 6001215 l_discount 11 l_extendedprice 6001215 l_linenumber 6001215 l_linestatus 6001215 l_orderkey 1500000 l_partkey 200000 l_quantity 6001215 l_receiptdate 6001215 l_returnflag 3 l_shipdate 6001215 l_shipinstruct 4 l_shipmode 7 l_suppkey 10000 l_tax 6001215 total 6001215 
+1 nation
+5 n_comment 25 n_name 25 n_nationkey 25 n_regionkey 5 total 25 
+1 orders
+10 o_clerk 1500000 o_comment 1500000 o_custkey 150000 o_orderdate 1500000 o_orderkey 1500000 o_orderpriority 1500000 o_orderstatus 1500000 o_shippriority 1500000 o_totalprice 1500000 total 1500000 
+1 part
+10 p_brand 200000 p_comment 200000 p_container 40 p_mfgr 200000 p_name 199996 p_partkey 200000 p_retailprice 200000 p_size 50 p_type 200000 total 200000 
+1 partsupp
+6 ps_availqty 800000 ps_comment 800000 ps_partkey 200000 ps_suppkey 10000 ps_supplycost 800000 total 800000 
+1 region
+4 r_comment 5 r_name 5 r_regionkey 5 total 5 
+1 supplier
+8 s_acctbal 10000 s_address 10000 s_comment 10000 s_name 10000 s_nationkey 25 s_phone 10000 s_suppkey 10000 total 10000 

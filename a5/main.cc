@@ -5,6 +5,7 @@
 #include "QueryOptimizer.h" 
 #include <stdlib.h>
 #include <stdio.h>
+#include "DatabaseController.h"
 // #include "y.tab.c"
 using namespace std;
 
@@ -54,16 +55,16 @@ void printAndList(struct AndList *currAndlist){
 int main () {
 
 	yyparse(); 
-	struct TableList* currTable = tables;
-	cout << "\nPrinting table: \n";
-	while (currTable != NULL)
-	{
-		/* code */
-		// cout << currTable->tableName << " alias: " << currTable->aliasAs << "\n"; 
-		cout << currTable->tableName << "\n"; 
-		currTable = currTable->next; 
-	}
-	cout << "\n"; 
+	// struct TableList* currTable = tables;
+	// cout << "\nPrinting table: \n";
+	// while (currTable != NULL)
+	// {
+	// 	/* code */
+	// 	// cout << currTable->tableName << " alias: " << currTable->aliasAs << "\n"; 
+	// 	cout << currTable->tableName << "\n"; 
+	// 	currTable = currTable->next; 
+	// }
+	// cout << "\n"; 
 
 	// cout << "Printing function: \n"; 
 	// printFunction(finalFunction); 
@@ -78,39 +79,41 @@ int main () {
 	// 	currgroupingAtts=currgroupingAtts->next;
 	// }
 	// cout << "\n";
-	cout<< "Printing selection attributes: \n";
-	struct NameList *currattsTosel=attsToSelect;
-	while (currattsTosel!=NULL){
-		cout << currattsTosel->name<<",";
-		currattsTosel=currattsTosel->next;
-	}
-	cout << "\n";
-	// cout << "DistinctAtts: " << distinctAtts << " DistinctFunctions: " << distinctFunc << "\n";
+	// cout<< "Printing selection attributes: \n";
+	// struct NameList *currattsTosel=attsToSelect;
+	// while (currattsTosel!=NULL){
+	// 	cout << currattsTosel->name<<",";
+	// 	currattsTosel=currattsTosel->next;
+	// }
+	// cout << "\n";
+	// // cout << "DistinctAtts: " << distinctAtts << " DistinctFunctions: " << distinctFunc << "\n";
 	
-	cout << "\nPrinting cAttributes:\n";
-	struct SchemaAttributes *currCAtts=schemaAttributes;
-	while(currCAtts!=NULL){
-		cout << "Name: " << currCAtts->name << " Type: " << currCAtts->type << "\n";
-		currCAtts=currCAtts->next;
-	}
+	// cout << "\nPrinting cAttributes:\n";
+	// struct SchemaAttributes *currCAtts=schemaAttributes;
+	// while(currCAtts!=NULL){
+	// 	cout << "Name: " << currCAtts->name << " Type: " << currCAtts->type << "\n";
+	// 	currCAtts=currCAtts->next;
+	// }
 
-	if(fileType!=NULL){
-		cout << "\nFileName: "<< fileType << "\n";
-	}
-	cout << "Printing sort attributes:\n";
-	struct SortAttributes *currSortAtts=sortAttributes;
-	while(currSortAtts!=NULL){
-		cout << "Name: " << currSortAtts->name << " \n";
-		currSortAtts=currSortAtts->next;
-	}
+	// if(fileType!=NULL){
+	// 	cout << "\nFileName: "<< fileType << "\n";
+	// }
+	// cout << "Printing sort attributes:\n";
+	// struct SortAttributes *currSortAtts=sortAttributes;
+	// while(currSortAtts!=NULL){
+	// 	cout << "Name: " << currSortAtts->name << " \n";
+	// 	currSortAtts=currSortAtts->next;
+	// }
 
 	
-	if(fileName!=NULL){
-		cout << "\nloadFrom: "<< fileName << "\n";
-	}
+	// if(fileName!=NULL){
+	// 	cout << "\nloadFrom: "<< fileName << "\n";
+	// }
 
-	cout << "OperationType: " << operationType << "\n";
+	// cout << "OperationType: " << operationType << "\n";
 
+	DatabaseController myDBController;
+	myDBController.processQuery();
 
 	// QueryOptimizer myQO; 
 	// myQO.optimizeQuery();

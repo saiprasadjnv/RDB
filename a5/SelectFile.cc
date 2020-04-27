@@ -29,8 +29,8 @@ void* SelectFileThread(void* myargs){
 		temp = new Record; 
 	}
 	delete temp; 
+	inArgs->inFile->Close();
 	inArgs->outPipe->ShutDown(); 
-	inArgs->inFile->Close(); 
 	delete inArgs; 
 	return NULL;
 }

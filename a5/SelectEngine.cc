@@ -21,7 +21,7 @@ int SelectEngine::Execute(){
     }
     queryTree = myQueryOptimizer->rootNode; 
     Pipe* tempPipe; 
-    for(int i=0; i<queryTree->pipeOut; i++){
+    for(int i=0; i<=queryTree->pipeOut; i++){
         allPipes.push_back(new Pipe(100)); 
     }
     ExecuteQuery(queryTree); 
@@ -33,9 +33,11 @@ int SelectEngine::Execute(){
         myWriteout->WaitUntilDone();
     }else{
         Record temp;
-        Pipe *outPipe=allPipes.back();
+        Pipe *outPipe=allPipes[queryTree->pipeOut];
+        Schema *outsch = queryTree->outSchema;  
+        // queryTree->outSchema->Print();
         while(outPipe->Remove(&temp)!=0){
-            temp.Print(queryTree->outSchema);
+            temp.Print(outsch);
         }
 
     }
@@ -58,7 +60,7 @@ void SelectEngine::ExecuteQuery(TreeNode *currNode){
             tableName.append(MY_BIN);
             schemaName = currNode->leftRel;
             schemaName.append(MY_SCHM); 
-            cout << schemaName << "---------------" << currNode->leftRel<< "\n"; 
+            // cout << schemaName << "---------------" << currNode->leftRel<< "\n"; 
             mySchema = new Schema((char*)schemaName.c_str(), (char*)currNode->leftRel.c_str()); 
             myDBFile = new DBFile(); 
             myDBFile->Open(tableName.c_str());

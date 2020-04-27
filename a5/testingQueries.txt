@@ -1,0 +1,63 @@
+CREATE TABLE nation (n_nationkey INTEGER, n_name STRING, n_regionkey INTEGER, n_comment STRING) AS SORTED ON n_regionkey;
+CREATE TABLE nation (n_nationkey INTEGER, n_name STRING, n_regionkey INTEGER, n_comment STRING) AS HEAP;
+CREATE TABLE region (r_regionkey INTEGER, r_name STRING, r_comment STRING) AS HEAP;
+CREATE TABLE customer (c_custkey INTEGER, c_name STRING, c_address STRING, c_nationkey INTEGER, c_phone STRING, c_acctbal DOUBLE, c_mktsegment STRING, c_comment STRING) AS HEAP;
+CREATE TABLE partsupp (ps_partkey INTEGER, ps_suppkey INTEGER, ps_availqty INTEGER, ps_supplycost DOUBLE, ps_comment STRING) AS HEAP;
+CREATE TABLE part (p_partkey INTEGER, p_name STRING, p_mfgr STRING, p_brand STRING, p_type STRING, p_size INTEGER, p_container STRING, p_retailprice DOUBLE) AS SORTED ON p_container;
+CREATE TABLE supplier (s_suppkey INTEGER, s_name STRING, s_address STRING, s_nationkey INTEGER, s_phone STRING, s_acctbal DOUBLE, s_comment STRING) AS HEAP;
+
+BEGIN
+part
+part.tbl
+p_partkey Int
+p_name String
+p_mfgr String
+p_brand String
+p_type String
+p_size Int
+p_container String
+p_retailprice Double
+p_comment String
+END
+
+SELECT SUM (n.n_nationkey)
+FROM nation AS n
+WHERE (n.n_nationkey = n.n_nationkey)
+
+
+BEGIN
+region
+region.tbl
+r_regionkey Int
+r_name String
+r_comment String
+END
+
+s_suppkey Int
+s_name String
+s_address String
+s_nationkey Int
+s_phone String
+s_acctbal Double
+s_comment String
+
+
+BEGIN
+customer
+customer.tbl
+c_custkey Int
+c_name String
+c_address String
+c_nationkey Int
+c_phone String
+c_acctbal Double
+c_mktsegment String
+c_comment String
+END
+
+
+ps_partkey Int
+ps_suppkey Int
+ps_availqty Int
+ps_supplycost Double
+ps_comment String

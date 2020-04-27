@@ -465,25 +465,25 @@ void TreeNode::printNode(){
    
     cout << "\n********************************************************************************************\n";
     switch (operation){
-        case SelectFile:
+        case SELECTFILE:
             cout << "SELECT FILE operation\n ";
             break;
-        case SelectPipe:
+        case SELECTPIPE:
             cout << "SELECT PIPE operation\n ";
             break;
-        case Project:
+        case PROJECT:
             cout << "PROJECT operation\n ";
             break;
-        case Join:
+        case JOIN:
             cout << "JOIN operation\n ";
             break;
-        case DuplicateRemoval:
+        case DUPLICATEREMOVAL:
             cout << "DISTINCT operation\n ";
             break;
-        case Sum:
+        case SUM:
             cout << "SUM operation\n ";
             break;
-        case Groupby:
+        case GROUPBY:
             cout << "GROUPBY operation\n ";
             break;
         default:
@@ -497,7 +497,7 @@ void TreeNode::printNode(){
     //     cout <<" Right Rel: "<<rightRel ;
     // }
     // cout << "\n";
-    if(operation==Join){
+    if(operation==JOIN){
         if(pipeLeft>=0){
         cout << "Left Input Pipe: "<<pipeLeft << " \n";
         } 
@@ -570,7 +570,7 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
     opType nodeOperation = treeNode->operation;
     string AGGREGATE="aggregate";
     
-    if(nodeOperation==SelectFile){
+    if(nodeOperation==SELECTFILE){
         //Select File
         if(treeNode->leftRel.size()==0){
             cerr << "Invalid file for selectFile !!\n"; 
@@ -604,7 +604,7 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
         treeNode->selOp = new CNF; 
         treeNode->literal=new Record();
         treeNode->selOp->GrowFromParseTree(&tempAndlist, treeNode->outSchema, *treeNode->literal); 
-    }else if(nodeOperation==SelectPipe){
+    }else if(nodeOperation==SELECTPIPE){
         //Select Pipe
         if(treeNode->leftRel.size()==0){
             cerr << "Invalid Relation name given for selectPiep !!\n"; 
@@ -626,14 +626,14 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
             treeNode->selOp->GrowFromParseTree(Relations[tableName].second,treeNode->outSchema,*treeNode->literal);
         }
         
-    }else if(nodeOperation==DuplicateRemoval){
+    }else if(nodeOperation==DUPLICATEREMOVAL){
         //Duplicate Removal
         if(treeNode->LeftinSchema==nullptr){
             cerr << "Mandatory input schema is missing for Duplicate!!\n";
             exit(1);
         }
         treeNode->outSchema=treeNode->LeftinSchema;
-    }else if(nodeOperation==Join){
+    }else if(nodeOperation==JOIN){
         //Join operation
         if(treeNode->leftRel.size()==0 || treeNode->rightRel.size()==0){
             cerr << "One of the two input relation names are missing for Join!!\n";
@@ -679,7 +679,7 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
         treeNode->literal=new Record();
         treeNode->selOp=new CNF();
         treeNode->selOp->GrowFromParseTree(treeNode->treeAndList,treeNode->LeftinSchema,treeNode->RightinSchema,*treeNode->literal);
-    }else if(nodeOperation==Sum){
+    }else if(nodeOperation==SUM){
         //Sum aggregate operator
         if(treeNode->LeftinSchema==nullptr){
             cerr << "Input schemas is missing for Sum!!\n";
@@ -699,7 +699,7 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
             outAtts={(char*)AGGREGATE.c_str(),Double};
         }
         treeNode->outSchema=new Schema("sum_sch",1,&outAtts);
-    }else if(nodeOperation==Groupby){
+    }else if(nodeOperation==GROUPBY){
         //Groupby operator
         if(treeNode->nodeFunc==nullptr){
             cerr << "Input function is missing for Groupby!!\n";
@@ -732,7 +732,7 @@ void QueryOptimizer::InitTreeNode(TreeNode *treeNode){
             outAtts->push_back(Attribute{inputSchemaAtts[putAttsHere[i]].name,inputSchemaAtts[putAttsHere[i]].myType});
         }
         treeNode->outSchema=new Schema("groupby_sch",numOfAtts+1,outAtts->data());
-    }else if(nodeOperation==Project){
+    }else if(nodeOperation==PROJECT){
         //Project operator
         if(treeNode->LeftinSchema==nullptr){
             cerr << "Input schema is missing for Project!!\n";
@@ -788,7 +788,7 @@ void QueryOptimizer::constructQueryPlanTree(){
         //Distinct operator for aggregate function
         if(myQueryParams->distinctFunc){
             TreeNode *distinctNode=new TreeNode();
-            distinctNode->operation=DuplicateRemoval;
+            distinctNode->operation=DUPLICATEREMOVAL;
             string reltn=rootNode->leftRel;
             if(rootNode->rightRel.size()>0){
                 reltn.append(",").append(rootNode->rightRel);
@@ -806,7 +806,7 @@ void QueryOptimizer::constructQueryPlanTree(){
         //Groupby node
         if(myQueryParams->groupingAtts!=NULL){
             TreeNode *groupbyNode=new TreeNode();
-            groupbyNode->operation=Groupby;
+            groupbyNode->operation=GROUPBY;
             groupbyNode->pipeLeft=rootNode->pipeOut;
             groupbyNode->pipeOut=PipeNumber++;
             groupbyNode->LeftinSchema=rootNode->outSchema;
@@ -840,7 +840,7 @@ void QueryOptimizer::constructQueryPlanTree(){
         //Distinct node for attributes
         if(myQueryParams->distinctAtts){
             TreeNode *distinctAttsNode=new TreeNode();
-            distinctAttsNode->operation=DuplicateRemoval;
+            distinctAttsNode->operation=DUPLICATEREMOVAL;
             distinctAttsNode->pipeLeft=rootNode->pipeOut;
             distinctAttsNode->pipeOut=PipeNumber++;
             string reltn=rootNode->leftRel;
@@ -859,7 +859,7 @@ void QueryOptimizer::constructQueryPlanTree(){
         //Sum node for pure aggregation without groupby
         if(myQueryParams->groupingAtts==NULL && myQueryParams->finalFunction!=NULL){
             TreeNode *sumNode=new TreeNode();
-            sumNode->operation=Sum;
+            sumNode->operation=SUM;
             string reltn=rootNode->leftRel;
             if(rootNode->rightRel.size()>0){
                 reltn.append(",").append(rootNode->rightRel);
@@ -880,7 +880,7 @@ void QueryOptimizer::constructQueryPlanTree(){
         //Project node
         if(myQueryParams->attsToSelect!=NULL || rootNode->nodeFunc!=nullptr){
             TreeNode *projectNode=new TreeNode();
-            projectNode->operation=Project;
+            projectNode->operation=PROJECT;
             projectNode->pipeLeft=rootNode->pipeOut;
             projectNode->pipeOut=PipeNumber++;
             projectNode->LeftinSchema=rootNode->outSchema;
@@ -910,7 +910,7 @@ TreeNode* QueryOptimizer::getJoinNodes(string expression, int &PipeNumber){
         TreeNode *leftRoot = selectFileNode(leftRelName, PipeNumber); 
         TreeNode *rightRoot = selectFileNode(rightRelName, PipeNumber); 
         TreeNode *JoinNode = new TreeNode; 
-        JoinNode->operation = Join; 
+        JoinNode->operation = JOIN; 
         JoinNode->left = leftRoot; 
         JoinNode->right = rightRoot; 
         JoinNode->LeftinSchema = leftRoot->outSchema; 
@@ -941,7 +941,7 @@ TreeNode* QueryOptimizer::getJoinNodes(string expression, int &PipeNumber){
             string myleftRel = leftRoot->leftRel; 
             myleftRel.append(","); 
             myleftRel.append(leftRoot->rightRel); 
-            JoinNode->operation = Join; 
+            JoinNode->operation = JOIN; 
             JoinNode->left = leftRoot; 
             JoinNode->right = rightRoot; 
             JoinNode->LeftinSchema = leftRoot->outSchema; 
@@ -962,7 +962,7 @@ TreeNode* QueryOptimizer::getJoinNodes(string expression, int &PipeNumber){
 TreeNode* QueryOptimizer::selectFileNode(string tableName, int &PipeNumber){
     TreeNode *tempNode = new TreeNode; 
     TreeNode *rootForSelect; 
-    tempNode->operation = SelectFile; 
+    tempNode->operation = SELECTFILE; 
     tempNode->leftRel = tableName;  
     tempNode->pipeOut = PipeNumber++; 
     tempNode->left = nullptr; 
@@ -972,7 +972,7 @@ TreeNode* QueryOptimizer::selectFileNode(string tableName, int &PipeNumber){
     // rootForSelect->printNode(); 
     if(Relations[tableName].second!=NULL){
         TreeNode *pipeNode = new TreeNode; 
-        pipeNode->operation = SelectPipe; 
+        pipeNode->operation = SELECTPIPE; 
         pipeNode->leftRel = Relations[tableName].first; 
         pipeNode->LeftinSchema = tempNode->outSchema; 
         pipeNode->left = tempNode; 

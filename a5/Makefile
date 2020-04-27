@@ -6,15 +6,18 @@ ifdef linux
 tag = -n
 endif
 
-classes= Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o Function.o SelectFile.o SelectPipe.o Project.o DuplicateRemoval.o WriteOut.o Sum.o GroupBy.o JoinUtil.o Join.o Statistics.o QueryOptimizer.o DatabaseController.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o
+classes= Record.o Comparison.o ComparisonEngine.o Schema.o File.o GenericDBFile.o Pipe.o LoserTree.o BigQ.o SortedFileHandler.o SortedFile.o HeapFileHandler.o HeapFile.o DBFile.o Function.o SelectFile.o SelectPipe.o Project.o DuplicateRemoval.o WriteOut.o Sum.o GroupBy.o JoinUtil.o Join.o Statistics.o QueryOptimizer.o SelectEngine.o DatabaseController.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o
 
 all: a42.out QueryOptimizerTest
 
 a42.out: $(classes) main.o
 	$(CC) -o a42.out $(classes) main.o -ll -lpthread
-	
+
 QueryOptimizerTest: QueryOptimizerTest.cc
 	$(CC) -o QueryOptimizerTest $(classes) QueryOptimizerTest.cc  -ll -lpthread -lgtest
+
+SelectEngine.o: SelectEngine.cc 
+	$(CC) -g -c SelectEngine.cc
 
 statisticstest: $(classes) Statisticstest.o 
 	$(CC) -o statisticstest $(classes) Statisticstest.o  -ll -lpthread -lgtest

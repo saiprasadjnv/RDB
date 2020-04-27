@@ -18,8 +18,13 @@ DatabaseController::~DatabaseController(){
 }
 
 int DatabaseController::processQuery(){
-    switch(operationType){
+    SelectEngine* mySelectEngine; 
+    switch(operationType){  
         case SELECTOP:
+           mySelectEngine = new SelectEngine; 
+            mySelectEngine->redirectOutputTo = redirectOutputTo; 
+            mySelectEngine->Execute(); 
+            break;
         case CREATEOP:
             Create();
             return 1;
@@ -27,8 +32,14 @@ int DatabaseController::processQuery(){
             Insert();
             return 1;
         case DROPOP:
+            Drop(); 
+            return 1; 
         case UPDATEOP:
+
+            return 1; 
         case SETOP:
+            redirectOutputTo = string(fileName); 
+            return 1; 
         default:
             cerr << "Invalid query passed!!\n";
             exit(1);
@@ -164,4 +175,25 @@ int DatabaseController::Insert(){
     dbfile.Close();
 
     return 1;
+}
+
+int DatabaseController::Drop(){
+    string tableName;
+    struct TableList* currTables=tables;
+    if(currTables!=NULL){
+        tableName=strdup(currTables->tableName);
+    }
+    string tableFile;
+    tableFile.append(tableName).append(BIN_EXT);
+    string tableSchema;
+    tableSchema.append(tableName).append(SCHEMA_EXT);
+    // if(fopen(newTableSchema.c_str(),"r")==NULL){
+    //     cerr << "Table " << tableName << " doesn't exists!\n";
+    //     exit(1);
+    // }
+    remove(tableFile.c_str());  
+    remove(tableSchema.c_str()); 
+    remove(tableFile.append(".meta").c_str());
+   
+    return 1; 
 }

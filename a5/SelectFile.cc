@@ -30,6 +30,7 @@ void* SelectFileThread(void* myargs){
 	}
 	delete temp; 
 	inArgs->outPipe->ShutDown(); 
+	inArgs->inFile->Close(); 
 	delete inArgs; 
 	return NULL;
 }

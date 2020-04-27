@@ -11,7 +11,7 @@ using namespace std;
 
 
 DatabaseController::DatabaseController(){
-
+    redirectOutputTo = "testingOutput.txt"; 
 }
 DatabaseController::~DatabaseController(){
 

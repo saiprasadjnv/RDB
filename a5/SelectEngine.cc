@@ -27,7 +27,7 @@ int SelectEngine::Execute(){
     ExecuteQuery(queryTree); 
     if(redirectOutputTo.compare("STDOUT") != 0){
         WriteOut *myWriteout = new WriteOut; 
-        FILE *outPutFile = fopen(redirectOutputTo.c_str(), "w"); 
+        FILE *outPutFile = fopen(redirectOutputTo.c_str(), "a"); 
         myWriteout->Use_n_Pages(8); 
         myWriteout->Run(*allPipes[queryTree->pipeOut], outPutFile, *queryTree->outSchema);  
         myWriteout->WaitUntilDone();

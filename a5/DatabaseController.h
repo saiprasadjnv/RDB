@@ -26,7 +26,7 @@ extern int operationType; // operation code select-1, create-2 and so on (define
 class DatabaseController{
     private:
         DBFile *myDBFile;
-        string redirectOutputTo = "STDOUT"; 
+        string redirectOutputTo; 
         void createOrderMaker(OrderMaker *toWhich,SortAttributes *fromWhich,Schema *whichSchema); 
         Schema* createSchema(SchemaAttributes *fromWhich,string schemaFile);       
     public:

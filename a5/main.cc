@@ -4,13 +4,18 @@
 #include "Statistics.h"
 #include "QueryOptimizer.h" 
 #include <stdlib.h>
+#include <thread>
 #include <stdio.h>
 #include "DatabaseController.h"
 // #include "y.tab.c"
 using namespace std;
 
 extern "C" {
+	struct YY_BUFFER_STATE; 
 	int yyparse(void);   // defined in y.tab.c
+	struct YY_BUFFER_STATE *yy_scan_string(const char*);
+	void yy_delete_buffer(YY_BUFFER_STATE buffer);
+	// struct yy_buffer_state YY_BUFFER_STATE; 
 }
 
 extern struct TableList* tables; 
@@ -54,72 +59,21 @@ void printAndList(struct AndList *currAndlist){
 
 int main () {
 
-	yyparse(); 
-	// struct TableList* currTable = tables;
-	// cout << "\nPrinting table: \n";
-	// while (currTable != NULL)
-	// {
-	// 	/* code */
-	// 	// cout << currTable->tableName << " alias: " << currTable->aliasAs << "\n"; 
-	// 	cout << currTable->tableName << "\n"; 
-	// 	currTable = currTable->next; 
-	// }
-	// cout << "\n"; 
-
-	// cout << "Printing function: \n"; 
-	// printFunction(finalFunction); 
-	// cout << "\n";
-	// cout << "Printing final And List: \n"; 
-	// printAndList(boolean);  
-    // cout <<"\n";
-	// struct NameList *currgroupingAtts=groupingAtts;
-	// cout << "Printing groupingAtts:\n ";
-	// while(currgroupingAtts!=NULL){
-	// 	cout << currgroupingAtts->name <<",";
-	// 	currgroupingAtts=currgroupingAtts->next;
-	// }
-	// cout << "\n";
-	// cout<< "Printing selection attributes: \n";
-	// struct NameList *currattsTosel=attsToSelect;
-	// while (currattsTosel!=NULL){
-	// 	cout << currattsTosel->name<<",";
-	// 	currattsTosel=currattsTosel->next;
-	// }
-	// cout << "\n";
-	// // cout << "DistinctAtts: " << distinctAtts << " DistinctFunctions: " << distinctFunc << "\n";
-	
-	// cout << "\nPrinting cAttributes:\n";
-	// struct SchemaAttributes *currCAtts=schemaAttributes;
-	// while(currCAtts!=NULL){
-	// 	cout << "Name: " << currCAtts->name << " Type: " << currCAtts->type << "\n";
-	// 	currCAtts=currCAtts->next;
-	// }
-
-	// if(fileType!=NULL){
-	// 	cout << "\nFileName: "<< fileType << "\n";
-	// }
-	// cout << "Printing sort attributes:\n";
-	// struct SortAttributes *currSortAtts=sortAttributes;
-	// while(currSortAtts!=NULL){
-	// 	cout << "Name: " << currSortAtts->name << " \n";
-	// 	currSortAtts=currSortAtts->next;
-	// }
-
-	
-	// if(fileName!=NULL){
-	// 	cout << "\nloadFrom: "<< fileName << "\n";
-	// }
-
-	// cout << "OperationType: " << operationType << "\n";
-
 	DatabaseController myDBController;
-	myDBController.processQuery();
 
-	// QueryOptimizer myQO; 
-	// myQO.optimizeQuery();
-	// myQO.printQueryPlanTree();
-	// myQO.PrintMaps(); 
+	cout << "Database: \n";
+	string cmd; 
+	while(1){
+		cout << "\nSQL>";
+		cmd.clear(); 
+		getline(std::cin, cmd);
+		YY_BUFFER_STATE *buffer = yy_scan_string(cmd.c_str());
+		yyparse(); 
+		myDBController.processQuery();
+		cmd.clear(); 
+		// line.clear();
+		// this_thread::sleep_for(std::chrono::seconds(1));
+	}
 	return 0;
 }
-
 

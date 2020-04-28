@@ -31,6 +31,7 @@ int SelectEngine::Execute(){
         myWriteout->Use_n_Pages(8); 
         myWriteout->Run(*allPipes[queryTree->pipeOut], outPutFile, *queryTree->outSchema);  
         myWriteout->WaitUntilDone();
+        fclose(outPutFile);
     }else{
         Record temp;
         Pipe *outPipe=allPipes[queryTree->pipeOut];

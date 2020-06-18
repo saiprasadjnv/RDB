@@ -485,23 +485,27 @@ void Record :: WriteToFile (FILE *targetFile, Schema *mySchema) {
 		// depending on the type we then print out the contents
 
 		// first is integer
+		fprintf(targetFile, "%s : [", atts[i].name); 
 		if (atts[i].myType == Int) {
 			int *myInt = (int *) &(bits[pointer]);
 			fprintf(targetFile, "%d", *myInt);
-			fprintf(targetFile, "%c", '|'); 	
+			fprintf(targetFile, "%c", ']'); 	
 
 		// then is a double
 		} else if (atts[i].myType == Double) {
 			double *myDouble = (double *) &(bits[pointer]);
 			fprintf(targetFile, "%lf", *myDouble);
-			fprintf(targetFile, "%c", '|'); 	
+			fprintf(targetFile, "%c", ']'); 	
 
 		// then is a character string
 		} else if (atts[i].myType == String) {
 			char *myString = (char *) &(bits[pointer]);
 			fprintf(targetFile, "%s", myString);
-			fprintf(targetFile, "%c", '|'); 	
+			fprintf(targetFile, "%c", ']'); 	
 		} 
+		if (i != n - 1) {
+			fprintf(targetFile, ", "); 
+		}
 	}
 	fprintf(targetFile, "%c", '\n');
 }

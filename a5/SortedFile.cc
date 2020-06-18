@@ -43,7 +43,7 @@ SortedFile::~SortedFile(){
  * Before creating the new file it closes any existing file stream.
  */
 int SortedFile::Create (const char *f_path, void *startup) {  
-    mySortedFile->Close();
+    // mySortedFile->Close();
     mySortedFile->Open(0,(char *)f_path);
     sortInfo *sort_info=(sortInfo *)startup;
     sortFileHandler->f_path=(char *)f_path;

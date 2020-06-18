@@ -14,7 +14,7 @@
 #include "Defs.h"
 using namespace std;
 
-enum opType {SelectFile,SelectPipe,Project,Join,DuplicateRemoval,Sum,Groupby,WriteOut};
+enum opType {SELECTFILE,SELECTPIPE,PROJECT,JOIN,DUPLICATEREMOVAL,SUM,GROUPBY,WRITEOUT};
 
 struct queryParsedInfo{
     struct TableList* tables; 

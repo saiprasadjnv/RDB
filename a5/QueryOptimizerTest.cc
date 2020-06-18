@@ -38,7 +38,7 @@ TEST(QueryOptimizerTest,GetSelectFunctionWithCNF){
     int PipeNumber; 
     myQO.optimizeQuery();
     TreeNode *rootNode = myQO.selectFileNode("nation", PipeNumber); 
-    ASSERT_EQ(rootNode->operation,SelectPipe);  
+    ASSERT_EQ(rootNode->operation,SELECTPIPE);  
 }
 
 TEST(QueryOptimizerTest,GetSelectFunctionWithoutCNF){
@@ -50,7 +50,7 @@ TEST(QueryOptimizerTest,GetSelectFunctionWithoutCNF){
     int PipeNumber; 
     myQO.optimizeQuery();
     TreeNode *rootNode = myQO.selectFileNode("region", PipeNumber); 
-    ASSERT_EQ(rootNode->operation,SelectFile);   
+    ASSERT_EQ(rootNode->operation,SELECTFILE);   
 }
 
 TEST(QueryOptimizerTest, ProjectSelectQuery){
@@ -60,7 +60,7 @@ TEST(QueryOptimizerTest, ProjectSelectQuery){
     QueryOptimizer myQO; 
     myQO.optimizeQuery(); 
     opType operation = myQO.rootNode->operation; 
-    ASSERT_EQ(operation, Project);  
+    ASSERT_EQ(operation, PROJECT);  
 }
 
 TEST(QueryOptimizerTest,processOrListFunction){
@@ -85,7 +85,7 @@ TEST(QueryOptimizerTest,InitTreeNodeJoinTest){
     TreeNode JoinNode; 
     Schema nationSchema("catalog", "n.nation"); 
     Schema regionSchema("catalog", "r.region"); 
-    JoinNode.operation = Join; 
+    JoinNode.operation = JOIN; 
     JoinNode.LeftinSchema = &nationSchema; 
     JoinNode.RightinSchema = &regionSchema; 
     JoinNode.leftRel = "r"; 
@@ -105,7 +105,7 @@ TEST(QueryOptimizerTest,InitTreeNodeSelectPipeTest){
     myQO.optimizeQuery();
     Schema nationSchema("catalog", "n.nation"); 
     TreeNode selectPipe; 
-    selectPipe.operation = SelectPipe; 
+    selectPipe.operation = SELECTPIPE; 
     selectPipe.LeftinSchema = &nationSchema; 
     selectPipe.leftRel = "n"; 
     myQO.InitTreeNode(&selectPipe); 

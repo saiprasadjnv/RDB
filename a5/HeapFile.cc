@@ -35,7 +35,7 @@ HeapFile::~HeapFile(){
  * Before creating the new file it closes any existing file stream.
  */
 int HeapFile::Create (const char *f_path, void *startup) {  
-    myHeapFile->Close();
+    // myHeapFile->Close();
     myHeapFile->Open(0,(char *)f_path);
     return 1;
 }

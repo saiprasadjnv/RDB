@@ -1,13 +1,15 @@
-#ifndef DatabaseController_H
-#define DatabaseController_H
+#ifndef SELECTENGINE_H
+#define SELECTENGINE_H 
+#include <iostream>
+#include <string>
+#include <vector> 
+#include "QueryOptimizer.h" 
+#include "Pipe.h" 
+#include "DBFile.h" 
+#include "RelOp.h"
 
-#include "DBFile.h"
-#include "Comparison.h"
-#include "ParseTree.h"
-#include "Defs.h"
-#include "Schema.h"
-#include "vector"
-#include "SelectEngine.h" 
+#define MY_BIN ".bin"
+#define MY_SCHM ".schema" 
 using namespace std; 
 
 extern struct TableList* tables; 
@@ -23,18 +25,20 @@ extern struct SortAttributes *sortAttributes; // sort attributes to be used in s
 extern char *fileName; // fileName for query specific if needed
 extern int operationType; // operation code select-1, create-2 and so on (defined in parseTree.h)
 
-class DatabaseController{
-    private:
-        DBFile *myDBFile;
+class SelectEngine{
+    friend class DatabaseController; 
+    private: 
+        vector <Pipe*> allPipes; 
+        TreeNode *queryTree; 
+        QueryOptimizer *myQueryOptimizer; 
         string redirectOutputTo; 
-        void createOrderMaker(OrderMaker *toWhich,SortAttributes *fromWhich,Schema *whichSchema); 
-        Schema* createSchema(SchemaAttributes *fromWhich,string schemaFile);       
+
+        void ExecuteQuery(TreeNode *currNode); 
     public:
-        DatabaseController();
-        ~DatabaseController();
-        int processQuery();
-        int Create();
-        int Insert();
-        int Drop();
-};
-#endif 
+        SelectEngine();
+        ~SelectEngine(); 
+        int Execute(); 
+
+}; 
+
+#endif

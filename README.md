@@ -8,4 +8,4 @@ Once the zip is extracted, execute the below commands.
 • ./a5.out – To execute the individual tests.
 • ./DatabaseControllerTest– To execute unit test cases using gTest.
 Architecture:
-   ![alt text] https://github.com/saiprasadjnv/RDB/blob/master/Architecture.png
+   ![alt text](https://github.com/saiprasadjnv/RDB/blob/master/Architecture.png)
